@@ -4,6 +4,7 @@
   "private": true,
   "description": "H5 market heat board for money.feroad.com",
   "type": "module",
+  "packageManager": "pnpm@10.26.1",
   "scripts": {
     "build": "node scripts/build.mjs",
     "check": "node scripts/check.mjs",

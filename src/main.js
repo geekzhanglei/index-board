@@ -26,10 +26,29 @@ load();
 
 function getRoute() {
   const id = window.location.hash.replace(/^#\/?/, "");
+  if (id.startsWith("history/")) {
+    return id;
+  }
   return routes.some(route => route.id === id) ? id : "overview";
 }
 
 async function load() {
+  if (state.route.startsWith("history/")) {
+    const id = state.route.split("/")[1] || "csi300";
+    state.status = "loading";
+    state.error = "";
+    render();
+    try {
+      state.data = await requestMarket("/blogapi/market/history", { id, years: 10 });
+      state.status = "ready";
+    } catch (error) {
+      state.status = "error";
+      state.error = error.message || "历史数据加载失败";
+    }
+    render();
+    return;
+  }
+
   const route = currentRoute();
   if (!route.endpoint) {
     state.status = "ready";
@@ -94,6 +113,7 @@ function renderBody() {
   }
 
   const route = currentRoute();
+  if (state.route.startsWith("history/")) return renderHistory(normalizeHistory(state.data));
   if (route.id === "overview") return renderOverview(normalizeOverview(state.data));
   if (route.id === "fund-flow") return renderFundFlow(normalizeFundFlow(state.data));
   if (route.id === "crowding") return renderCrowding(normalizeCrowding(state.data));
@@ -188,8 +208,9 @@ function renderOverview(data) {
 }
 
 function renderMarketCard(item) {
+  const clickable = item.id === "csi300";
   return `
-    <article class="market-card">
+    <article class="market-card ${clickable ? "clickable" : ""}" ${clickable ? "data-history-card='csi300'" : ""}>
       <div class="market-head">
         <div>
           <h3>${safeText(item.name)}</h3>
@@ -209,6 +230,7 @@ function renderMarketCard(item) {
         <span>${safeText(item.marketCapText)}</span>
         <strong class="${item.capChangeClass}">${safeText(item.marketCapChangeText)}</strong>
       </div>
+      ${clickable ? `<a class="history-link" href="#/history/csi300">查看 10 年市值 / PE</a>` : ""}
     </article>
   `;
 }
@@ -326,6 +348,85 @@ function renderConsensus(data) {
         </article>
       `).join("")}
     </section>
+  `;
+}
+
+function renderHistory(data) {
+  return `
+    ${renderPageHead({
+      eyebrow: "10Y History",
+      title: `${safeText(data.market.name)}十年变化`,
+      subtitle: "按每日缓存的后端数据展示。柱状为估算总市值，折线为 PE 口径；横轴按月采样。",
+      ...data
+    })}
+    <article class="history-panel">
+      <div class="chart-wrap">
+        ${renderMixedChart(data.points)}
+      </div>
+      <div class="history-note">
+        <span>左轴：${safeText(data.market.currency)} 总市值</span>
+        <span>右轴：${safeText(data.market.peType)} PE</span>
+        <span>市值来源：${safeText(data.market.marketCapSource)}</span>
+        <span>PE 来源：${safeText(data.market.peSource)}</span>
+      </div>
+    </article>
+  `;
+}
+
+function renderMixedChart(points) {
+  const list = points.filter(item => item.marketCap != null || item.peTtm != null);
+  if (!list.length) {
+    return `<div class="state-panel">暂无历史数据</div>`;
+  }
+
+  const width = 960;
+  const height = 420;
+  const padLeft = 76;
+  const padRight = 64;
+  const padTop = 34;
+  const padBottom = 54;
+  const plotW = width - padLeft - padRight;
+  const plotH = height - padTop - padBottom;
+  const caps = list.map(item => item.marketCap).filter(item => item != null);
+  const pes = list.map(item => item.peTtm).filter(item => item != null);
+  const capMax = Math.max(...caps, 1);
+  const peMax = Math.max(...pes, 1);
+  const peMin = Math.min(...pes, 0);
+  const barW = Math.max(plotW / list.length * 0.58, 2);
+  const step = list.length > 1 ? plotW / (list.length - 1) : plotW;
+
+  const x = index => padLeft + step * index;
+  const capY = value => padTop + plotH - (value || 0) / capMax * plotH;
+  const peY = value => padTop + plotH - ((value || peMin) - peMin) / Math.max(peMax - peMin, 1) * plotH;
+  const line = list
+    .map((item, index) => item.peTtm == null ? null : `${x(index)},${peY(item.peTtm)}`)
+    .filter(Boolean)
+    .join(" ");
+  const tickIndexes = Array.from(new Set([0, Math.floor(list.length / 4), Math.floor(list.length / 2), Math.floor(list.length * 3 / 4), list.length - 1]));
+
+  return `
+    <svg class="mixed-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="沪深300十年市值和 PE 混合图">
+      <line x1="${padLeft}" y1="${padTop}" x2="${padLeft}" y2="${padTop + plotH}" />
+      <line x1="${width - padRight}" y1="${padTop}" x2="${width - padRight}" y2="${padTop + plotH}" />
+      <line x1="${padLeft}" y1="${padTop + plotH}" x2="${width - padRight}" y2="${padTop + plotH}" />
+      <text x="14" y="${padTop + 8}">${safeText(money(capMax, "CNY"))}</text>
+      <text x="${width - padRight + 10}" y="${padTop + 8}">${safeText(fixed(peMax, 1))}x</text>
+      <text x="${width - padRight + 10}" y="${padTop + plotH}">${safeText(fixed(peMin, 1))}x</text>
+      ${list.map((item, index) => `
+        <rect class="cap-bar" x="${x(index) - barW / 2}" y="${capY(item.marketCap)}" width="${barW}" height="${padTop + plotH - capY(item.marketCap)}">
+          <title>${safeText(item.date)} 市值 ${safeText(money(item.marketCap, "CNY"))} PE ${safeText(fixed(item.peTtm, 2))}</title>
+        </rect>
+      `).join("")}
+      ${line ? `<polyline class="pe-line" points="${line}" />` : ""}
+      ${list.map((item, index) => item.peTtm == null ? "" : `
+        <circle class="pe-dot" cx="${x(index)}" cy="${peY(item.peTtm)}" r="3">
+          <title>${safeText(item.date)} PE ${safeText(fixed(item.peTtm, 2))}</title>
+        </circle>
+      `).join("")}
+      ${tickIndexes.map(index => `
+        <text class="x-tick" x="${x(index)}" y="${height - 18}">${safeText(list[index].date)}</text>
+      `).join("")}
+    </svg>
   `;
 }
 
@@ -456,6 +557,18 @@ function normalizeConsensus(payload) {
       description: item.description,
       topNames: item.topNames || []
     }))
+  };
+}
+
+function normalizeHistory(payload) {
+  const data = payload || {};
+  return {
+    source: data.source || "service",
+    usingDemo: data.source === "demo",
+    demoReason: data.demoReason || "",
+    updatedAtText: dateText(data.updatedAt),
+    market: data.market || {},
+    points: Array.isArray(data.points) ? data.points : []
   };
 }
 

@@ -1,5 +1,5 @@
 export const API_BASE_URL =
-  window.__INDEX_BOARD_CONFIG__?.apiBaseUrl || "https://blog.feroad.com";
+  window.__INDEX_BOARD_CONFIG__?.apiBaseUrl || "https://api.feroad.com";
 
 export const ENABLE_DEMO_FALLBACK =
   window.__INDEX_BOARD_CONFIG__?.enableDemoFallback !== false;

@@ -25,7 +25,8 @@ for (const endpoint of [
   "/blogapi/market/overview",
   "/blogapi/market/fund-flow",
   "/blogapi/market/crowding",
-  "/blogapi/market/consensus"
+  "/blogapi/market/consensus",
+  "/blogapi/market/history"
 ]) {
   if (!js.includes(endpoint)) {
     throw new Error(`main.js does not reference ${endpoint}`);

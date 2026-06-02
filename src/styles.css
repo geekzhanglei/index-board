@@ -290,6 +290,20 @@ h3 {
   padding: 16px;
 }
 
+.market-card.clickable {
+  position: relative;
+}
+
+.history-link {
+  display: inline-flex;
+  margin-top: 14px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: #fffaf1;
+  background: #202020;
+  font-size: 12px;
+}
+
 .market-head,
 .price-row,
 .cap-row,
@@ -398,6 +412,69 @@ h3 {
 .summary-card,
 .state-panel {
   padding: 18px;
+}
+
+.history-panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.chart-wrap {
+  overflow-x: auto;
+}
+
+.mixed-chart {
+  display: block;
+  min-width: 820px;
+  width: 100%;
+  height: auto;
+}
+
+.mixed-chart line {
+  stroke: #d7c8ae;
+  stroke-width: 1;
+}
+
+.mixed-chart text {
+  fill: var(--muted);
+  font-size: 13px;
+}
+
+.mixed-chart .x-tick {
+  text-anchor: middle;
+}
+
+.cap-bar {
+  fill: #2d6f88;
+  opacity: .72;
+}
+
+.pe-line {
+  fill: none;
+  stroke: #b73c31;
+  stroke-width: 3;
+}
+
+.pe-dot {
+  fill: #b73c31;
+}
+
+.history-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.history-note span {
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: var(--muted);
+  background: #f1e4cd;
+  font-size: 12px;
 }
 
 .summary-card {
