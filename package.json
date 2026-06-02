@@ -1,0 +1,15 @@
+{
+  "name": "index-board",
+  "version": "0.1.0",
+  "private": true,
+  "description": "H5 market heat board for money.feroad.com",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "dev": "node scripts/dev-server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,51 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Check
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Pack artifact
+        run: tar -czf index-board-dist.tar.gz -C dist .
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Upload artifact
+        run: scp -i ~/.ssh/deploy_key index-board-dist.tar.gz "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/index-board-dist.tar.gz"
+
+      - name: Deploy on server
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" '
+            set -e
+            APP_DIR=/www/frontEnd/index-board
+            RELEASE_DIR="$APP_DIR/releases/${{ github.sha }}"
+            mkdir -p "$RELEASE_DIR"
+            tar -xzf /tmp/index-board-dist.tar.gz -C "$RELEASE_DIR"
+            ln -sfn "$RELEASE_DIR" "$APP_DIR/current"
+            rm -f /tmp/index-board-dist.tar.gz
+          '
