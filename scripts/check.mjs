@@ -24,8 +24,7 @@ if (!html.includes('<div id="app"')) {
 
 for (const endpoint of [
   "/blogapi/market/overview",
-  "/blogapi/market/fund-flow",
-  "/blogapi/market/crowding",
+  "/blogapi/market/style",
   "/blogapi/market/value",
   "/blogapi/market/history"
 ]) {

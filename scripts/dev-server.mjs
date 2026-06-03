@@ -4,7 +4,11 @@ import { extname, join, normalize, resolve } from "node:path";
 import { createServer } from "node:http";
 
 const root = resolve("src");
+const projectRoot = resolve(".");
 const port = Number(process.env.PORT || 4173);
+const vendorFiles = new Map([
+  ["/vendor/echarts.esm.min.js", resolve(projectRoot, "node_modules/echarts/dist/echarts.esm.min.js")]
+]);
 
 const mime = {
   ".css": "text/css; charset=utf-8",
@@ -20,11 +24,15 @@ function safePath(urlPath) {
 }
 
 createServer(async (req, res) => {
-  let file = safePath(req.url || "/");
+  const urlPath = (req.url || "/").split("?")[0];
+  let file = vendorFiles.get(urlPath) || safePath(req.url || "/");
   if (!file.startsWith(root)) {
-    res.writeHead(403);
-    res.end("Forbidden");
-    return;
+    const allowedVendor = [...vendorFiles.values()].some(vendorFile => file === vendorFile);
+    if (!allowedVendor) {
+      res.writeHead(403);
+      res.end("Forbidden");
+      return;
+    }
   }
 
   try {

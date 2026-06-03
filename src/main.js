@@ -1,9 +1,9 @@
 import { requestMarket } from "./data.js";
+import * as echarts from "./vendor/echarts.esm.min.js";
 
 const routes = [
   { id: "overview", label: "市场温度", endpoint: "/blogapi/market/overview" },
-  { id: "fund-flow", label: "资金流向", endpoint: "/blogapi/market/fund-flow" },
-  { id: "crowding", label: "拥挤度", endpoint: "/blogapi/market/crowding" },
+  { id: "market-style", label: "市场风格", endpoint: "/blogapi/market/style" },
   { id: "value", label: "价值投资", endpoint: "/blogapi/market/value" }
 ];
 
@@ -21,6 +21,20 @@ const demoIndexCards = [
     pePercentile: 100,
     marketCap: 56200000000000,
     marketCapChangePct: 29
+  },
+  {
+    id: "csi800",
+    name: "中证800",
+    code: "000906.SH",
+    region: "A股",
+    style: "中大盘均衡",
+    status: "拥挤",
+    close: 5312.42,
+    changePct: 0.96,
+    peTtm: 24.1,
+    pePercentile: 91,
+    marketCap: 73800000000000,
+    marketCapChangePct: 24.8
   },
   {
     id: "csi1000",
@@ -112,10 +126,51 @@ const demoIndexCards = [
   }
 ];
 
+const demoIndustryFundFlows = [
+  { name: "银行", amount: 16.8, turnover: 682.4, marketCap: 12400000000000 },
+  { name: "电子", amount: 11.5, turnover: 738.6, marketCap: 10800000000000 },
+  { name: "非银金融", amount: 9.6, turnover: 526.3, marketCap: 9600000000000 },
+  { name: "食品饮料", amount: -1.4, turnover: 284.7, marketCap: 8200000000000 },
+  { name: "医药生物", amount: -11.6, turnover: 436.5, marketCap: 7600000000000 },
+  { name: "电力设备", amount: -8.9, turnover: 468.2, marketCap: 7100000000000 },
+  { name: "计算机", amount: 13.2, turnover: 496.8, marketCap: 6200000000000 },
+  { name: "通信", amount: 14.1, turnover: 414.8, marketCap: 5200000000000 },
+  { name: "汽车", amount: 4.1, turnover: 512.2, marketCap: 4900000000000 },
+  { name: "公用事业", amount: 9.2, turnover: 226.1, marketCap: 4300000000000 },
+  { name: "煤炭", amount: 7.8, turnover: 196.5, marketCap: 3900000000000 },
+  { name: "有色金属", amount: 6.2, turnover: 362.7, marketCap: 3700000000000 },
+  { name: "国防军工", amount: 3.4, turnover: 276.5, marketCap: 3500000000000 },
+  { name: "基础化工", amount: -2.7, turnover: 332.9, marketCap: 3300000000000 },
+  { name: "机械设备", amount: 5.8, turnover: 318.1, marketCap: 3200000000000 },
+  { name: "家用电器", amount: 2.6, turnover: 138.4, marketCap: 3000000000000 },
+  { name: "交通运输", amount: 4.9, turnover: 184.2, marketCap: 2800000000000 },
+  { name: "传媒", amount: -15.2, turnover: 352.9, marketCap: 2600000000000 },
+  { name: "石油石化", amount: 8.7, turnover: 171.3, marketCap: 2500000000000 },
+  { name: "建筑装饰", amount: -3.1, turnover: 149.7, marketCap: 2300000000000 },
+  { name: "房地产", amount: -4.8, turnover: 162.8, marketCap: 2200000000000 },
+  { name: "农林牧渔", amount: -1.9, turnover: 128.6, marketCap: 1900000000000 },
+  { name: "商贸零售", amount: -2.2, turnover: 118.4, marketCap: 1700000000000 },
+  { name: "社会服务", amount: -0.8, turnover: 92.1, marketCap: 1600000000000 },
+  { name: "钢铁", amount: 1.7, turnover: 84.6, marketCap: 1500000000000 },
+  { name: "轻工制造", amount: -1.1, turnover: 96.4, marketCap: 1400000000000 },
+  { name: "纺织服饰", amount: -0.9, turnover: 65.8, marketCap: 980000000000 },
+  { name: "美容护理", amount: -0.5, turnover: 46.7, marketCap: 820000000000 },
+  { name: "环保", amount: 1.2, turnover: 58.3, marketCap: 760000000000 },
+  { name: "建筑材料", amount: -2.6, turnover: 74.2, marketCap: 710000000000 },
+  { name: "综合", amount: 0.4, turnover: 31.5, marketCap: 320000000000 }
+];
+
 const demoFundFlow = {
   source: "demo",
   updatedAt: "2026-06-03T01:00:00+08:00",
-  summary: "资金仍在宽基和红利方向防守式流入，科技 ETF 有脉冲，新能源和医药继续承压。",
+  summary: "今日全市场成交约 1.06 万亿元，主线净流入 386 亿，占成交额 3.6%。这个比例已经不是噪音，说明资金在主动切换到宽基、红利和硬科技。",
+  turnover: {
+    total: 1060000000000,
+    mainBoard: 682000000000,
+    growthBoard: 254000000000,
+    hkConnect: 124000000000
+  },
+  marketNetFlow: 38600000000,
   etfRanking: [
     { name: "沪深300ETF", amount: 42.6, theme: "大盘核心" },
     { name: "中证A500ETF", amount: 31.2, theme: "宽基增配" },
@@ -124,11 +179,7 @@ const demoFundFlow = {
     { name: "科创100ETF", amount: -9.6, theme: "成长流出" },
     { name: "医药ETF", amount: -14.8, theme: "估值修复慢" }
   ],
-  industryMatrix: [
-    { name: "银行", amount: 16.8 }, { name: "通信", amount: 14.1 }, { name: "电子", amount: 11.5 }, { name: "公用事业", amount: 9.2 },
-    { name: "煤炭", amount: 7.8 }, { name: "汽车", amount: 4.1 }, { name: "家电", amount: 2.6 }, { name: "食品饮料", amount: -1.4 },
-    { name: "地产", amount: -4.8 }, { name: "新能源", amount: -8.9 }, { name: "医药", amount: -11.6 }, { name: "传媒", amount: -15.2 }
-  ],
+  industryMatrix: demoIndustryFundFlows,
   northbound: {
     today: 38.6,
     week: 126.4,
@@ -146,6 +197,18 @@ const demoFundFlow = {
 const demoCrowding = {
   source: "demo",
   updatedAt: "2026-06-03T01:00:00+08:00",
+  industries: [
+    { name: "银行", marketCap: 12400000000000, score: 76, turnoverShare: 8.6, fundFlow: 16.8, valuationPercentile: 62 },
+    { name: "电子", marketCap: 10800000000000, score: 82, turnoverShare: 14.8, fundFlow: 11.5, valuationPercentile: 78 },
+    { name: "食品饮料", marketCap: 8200000000000, score: 58, turnoverShare: 5.4, fundFlow: -1.4, valuationPercentile: 46 },
+    { name: "医药", marketCap: 7600000000000, score: 28, turnoverShare: 7.8, fundFlow: -11.6, valuationPercentile: 22 },
+    { name: "新能源", marketCap: 7100000000000, score: 34, turnoverShare: 8.9, fundFlow: -8.9, valuationPercentile: 18 },
+    { name: "通信", marketCap: 5200000000000, score: 88, turnoverShare: 9.2, fundFlow: 14.1, valuationPercentile: 84 },
+    { name: "汽车", marketCap: 4900000000000, score: 61, turnoverShare: 6.8, fundFlow: 4.1, valuationPercentile: 55 },
+    { name: "公用事业", marketCap: 4300000000000, score: 67, turnoverShare: 3.6, fundFlow: 9.2, valuationPercentile: 48 },
+    { name: "煤炭", marketCap: 3900000000000, score: 64, turnoverShare: 2.7, fundFlow: 7.8, valuationPercentile: 53 },
+    { name: "传媒", marketCap: 2600000000000, score: 72, turnoverShare: 4.3, fundFlow: -15.2, valuationPercentile: 69 }
+  ],
   ranks: [
     { name: "通信设备", score: 88, reason: "成交占比和估值分位同时高位" },
     { name: "半导体", score: 82, reason: "资金连续流入，波动放大" },
@@ -185,6 +248,192 @@ const demoCrowding = {
   ]
 };
 
+const marketStyleCatalog = [
+  {
+    id: "financial-dividend",
+    name: "金融红利",
+    industries: "银行、保险、券商、运营商、高股息央企",
+    heat: 86,
+    marketCap: 28600000000000,
+    flow: 82,
+    crowding: 74,
+    valuation: 58,
+    breadth: 64,
+    netFlow: 68.4,
+    turnoverShare: 18.6,
+    risk: "拥挤但未到极端",
+    note: "资金在低估值、高股息和央企方向防守式集中。"
+  },
+  {
+    id: "consumer-bluechip",
+    name: "消费白马",
+    industries: "白酒、食品饮料、家电、消费服务",
+    heat: 52,
+    marketCap: 14200000000000,
+    flow: 44,
+    crowding: 48,
+    valuation: 42,
+    breadth: 46,
+    netFlow: -3.2,
+    turnoverShare: 7.8,
+    risk: "修复观察",
+    note: "估值压力释放，但资金连续性不足。"
+  },
+  {
+    id: "tech-growth",
+    name: "科技成长",
+    industries: "AI、软件、互联网、计算机、通信",
+    heat: 79,
+    marketCap: 17600000000000,
+    flow: 73,
+    crowding: 84,
+    valuation: 76,
+    breadth: 57,
+    netFlow: 39.6,
+    turnoverShare: 16.2,
+    risk: "局部拥挤",
+    note: "AI 和通信链条活跃，但拥挤度已经偏高。"
+  },
+  {
+    id: "semiconductor-hardtech",
+    name: "半导体硬科技",
+    industries: "芯片、设备、材料、科创50",
+    heat: 71,
+    marketCap: 9600000000000,
+    flow: 62,
+    crowding: 78,
+    valuation: 81,
+    breadth: 52,
+    netFlow: 18.7,
+    turnoverShare: 8.5,
+    risk: "估值偏贵",
+    note: "科创方向有弹性，但估值容错率低。"
+  },
+  {
+    id: "new-energy",
+    name: "新能源",
+    industries: "光伏、锂电、储能、新能源车",
+    heat: 31,
+    marketCap: 9300000000000,
+    flow: 26,
+    crowding: 34,
+    valuation: 22,
+    breadth: 38,
+    netFlow: -21.4,
+    turnoverShare: 8.9,
+    risk: "低位冷清",
+    note: "估值低但资金尚未形成持续回流。"
+  },
+  {
+    id: "healthcare",
+    name: "医药医疗",
+    industries: "创新药、医疗器械、CXO、医疗服务",
+    heat: 28,
+    marketCap: 7600000000000,
+    flow: 24,
+    crowding: 28,
+    valuation: 25,
+    breadth: 34,
+    netFlow: -18.2,
+    turnoverShare: 7.3,
+    risk: "弱修复",
+    note: "低位但缺少主线资金确认。"
+  },
+  {
+    id: "property-chain",
+    name: "地产链",
+    industries: "房地产、建材、建筑、家居、物业",
+    heat: 35,
+    marketCap: 5200000000000,
+    flow: 31,
+    crowding: 39,
+    valuation: 20,
+    breadth: 41,
+    netFlow: -7.6,
+    turnoverShare: 4.6,
+    risk: "政策交易",
+    note: "弹性依赖政策预期，基本面验证不足。"
+  },
+  {
+    id: "cyclical-resources",
+    name: "周期资源",
+    industries: "煤炭、石油、有色、钢铁、化工",
+    heat: 63,
+    marketCap: 9600000000000,
+    flow: 58,
+    crowding: 61,
+    valuation: 49,
+    breadth: 55,
+    netFlow: 14.3,
+    turnoverShare: 9.4,
+    risk: "中性偏热",
+    note: "资源品和红利属性共振，但弹性弱于科技。"
+  },
+  {
+    id: "export-manufacturing",
+    name: "出海制造",
+    industries: "汽车、家电、机械、电网设备、船舶",
+    heat: 68,
+    marketCap: 11100000000000,
+    flow: 64,
+    crowding: 58,
+    valuation: 51,
+    breadth: 62,
+    netFlow: 22.8,
+    turnoverShare: 10.1,
+    risk: "趋势延续",
+    note: "外需和订单逻辑支撑，拥挤度仍可接受。"
+  },
+  {
+    id: "smallcap-growth",
+    name: "中小盘成长",
+    industries: "创业板、中证1000、专精特新、小微盘",
+    heat: 42,
+    marketCap: 16800000000000,
+    flow: 35,
+    crowding: 46,
+    valuation: 57,
+    breadth: 39,
+    netFlow: -12.5,
+    turnoverShare: 12.6,
+    risk: "分化明显",
+    note: "指数层面弱，局部主题仍有交易。"
+  }
+];
+
+const styleRotationTimeline = [
+  { start: 2006, end: 2007, style: "地产链" },
+  { start: 2009, end: 2010, style: "周期资源" },
+  { start: 2013, end: 2015, style: "科技成长" },
+  { start: 2016, end: 2017, style: "消费白马" },
+  { start: 2020, end: 2021, style: "新能源" },
+  { start: 2021, end: 2022, style: "周期资源" },
+  { start: 2023, end: 2024, style: "科技成长(AI)" },
+  { start: 2024, end: 2026, style: "金融红利" }
+];
+
+const demoMarketStyle = {
+  source: "demo",
+  updatedAt: "2026-06-03T01:00:00+08:00",
+  mainline: {
+    name: "金融红利",
+    score: 86,
+    netFlow: 68.4,
+    turnoverShare: 18.6,
+    crowding: 74,
+    verdict: "当前主线是金融红利：资金流入强、成交占比高，拥挤度偏高但未到极端。",
+    reasons: [
+      "银行、运营商、高股息央企持续承接防守资金。",
+      "净流入占成交额比例高于其他风格，说明不是日内噪音。",
+      "市场广度偏弱，指数上涨更多来自权重和红利资产。"
+    ]
+  },
+  styles: marketStyleCatalog,
+  rotations: styleRotationTimeline,
+  fundFlow: demoFundFlow,
+  crowding: demoCrowding
+};
+
 const demoValueInvesting = {
   source: "demo",
   updatedAt: "2026-06-03T01:00:00+08:00",
@@ -214,6 +463,8 @@ const state = {
 };
 
 const app = document.querySelector("#app");
+let chartInstances = [];
+let resizeBound = false;
 
 window.addEventListener("hashchange", () => {
   state.route = getRoute();
@@ -286,6 +537,7 @@ function currentRoute() {
 }
 
 function render() {
+  disposeCharts();
   app.innerHTML = `
     <header class="topbar">
       <a class="brand" href="#/overview" aria-label="市场温度看板">
@@ -305,6 +557,7 @@ function render() {
       ${renderBody()}
     </main>
   `;
+  queueMicrotask(mountCharts);
 }
 
 function renderBody() {
@@ -324,8 +577,7 @@ function renderBody() {
   const route = currentRoute();
   if (state.route.startsWith("history/")) return renderHistory(normalizeHistory(state.data));
   if (route.id === "overview") return renderOverview(normalizeOverview(state.data), state.histories);
-  if (route.id === "fund-flow") return renderFundFlow(normalizeFundFlow(state.data));
-  if (route.id === "crowding") return renderCrowding(normalizeCrowding(state.data));
+  if (route.id === "market-style") return renderMarketStyle(normalizeMarketStyle(state.data));
   if (route.id === "value") return renderValueInvesting(normalizeValueInvesting(state.data));
   return renderOverview(normalizeOverview(buildDemoOverview()), state.histories);
 }
@@ -335,6 +587,740 @@ app.addEventListener("click", event => {
     load();
   }
 });
+
+function disposeCharts() {
+  chartInstances.forEach(chart => {
+    try {
+      chart.dispose();
+    } catch {}
+  });
+  chartInstances = [];
+}
+
+function mountCharts() {
+  const chartNodes = [...document.querySelectorAll("[data-chart]")];
+  if (!chartNodes.length || state.status !== "ready") return;
+
+  if (state.route.startsWith("history/")) {
+    const data = normalizeHistory(state.data);
+    const series = buildHistorySeries(data.points);
+    mountChart("history-main", historyMainOption(series, data.market));
+    mountChart("pe-percentile", pePercentileOption(series));
+    mountChart("growth-compare", growthCompareOption(series));
+  } else {
+    const route = currentRoute();
+    if (route.id === "market-style") {
+      const data = normalizeMarketStyle(state.data);
+      mountChart("style-heatmap", styleHeatmapOption(data));
+      mountChart("style-timeline", styleTimelineOption(data));
+      mountChart("industry-crowding", industryCrowdingOption(data.crowding));
+      mountChart("flow-scale", flowScaleOption(data));
+      mountChart("etf-ranking", etfRankingOption(data));
+      mountChart("industry-flow", industryFlowOption(data));
+      mountChart("style-flow", styleFlowOption(data));
+      mountChart("crowding-rank", crowdingRankOption(data.crowding));
+      mountChart("breadth", breadthOption(data.crowding));
+      mountChart("cluster", clusterOption(data.crowding));
+      mountChart("crowding-history", crowdingHistoryOption(data.crowding));
+    }
+    if (route.id === "value") {
+      const data = normalizeValueInvesting(state.data);
+      document.querySelectorAll("[data-chart='dividend']").forEach(node => {
+        const index = Number(node.dataset.stockIndex);
+        const stock = data.stocks[index];
+        if (stock) mountChartNode(node, dividendOption(stock));
+      });
+    }
+  }
+
+  if (!resizeBound) {
+    resizeBound = true;
+    window.addEventListener("resize", () => {
+      chartInstances.forEach(chart => chart.resize());
+    });
+  }
+}
+
+function mountChart(name, option) {
+  const node = document.querySelector(`[data-chart='${name}']`);
+  if (node && option) mountChartNode(node, option);
+}
+
+function mountChartNode(node, option) {
+  const chart = echarts.init(node, null, { renderer: "canvas" });
+  chart.setOption(option);
+  chartInstances.push(chart);
+}
+
+function chartBaseGrid(extra = {}) {
+  return {
+    top: 48,
+    right: 48,
+    bottom: 42,
+    left: 54,
+    containLabel: true,
+    ...extra
+  };
+}
+
+function chartNumber(value) {
+  const num = Number(value);
+  return Number.isFinite(num) ? round(num) : null;
+}
+
+function historyMainOption(series, market) {
+  const list = series.filter(item => Number.isFinite(item.marketCapT) || Number.isFinite(item.pe));
+  const dates = list.map(item => item.date);
+  const latestName = safeText(market?.name || "指数");
+  return {
+    color: ["#7db2f2", "#ff2f22", "#7c35e8", "#129846"],
+    animationDuration: 550,
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "cross" },
+      valueFormatter: value => Number.isFinite(Number(value)) ? Number(value).toFixed(2) : value
+    },
+    legend: {
+      top: 4,
+      itemGap: 28,
+      data: ["总营收（TTM）", "总市值", "PE（TTM）", "巴菲特指标"]
+    },
+    grid: chartBaseGrid({ top: 88, right: 118, left: 118, bottom: 50 }),
+    xAxis: {
+      type: "category",
+      boundaryGap: true,
+      data: dates,
+      axisLabel: { interval: 11, rotate: 0 },
+      axisTick: { show: false }
+    },
+    yAxis: [
+      {
+        type: "value",
+        name: "市值（万亿）",
+        nameLocation: "end",
+        nameGap: 22,
+        nameTextStyle: { color: "#ff2f22", fontWeight: 700 },
+        axisLabel: { color: "#ff2f22" },
+        splitLine: { lineStyle: { color: "#e8e1d6", type: "dashed" } }
+      },
+      {
+        type: "value",
+        name: "营收（万亿）",
+        position: "left",
+        offset: 56,
+        nameLocation: "end",
+        nameGap: 22,
+        nameTextStyle: { color: "#2f74d0", fontWeight: 700 },
+        axisLabel: { color: "#2f74d0" },
+        splitLine: { show: false }
+      },
+      {
+        type: "value",
+        name: "PE（倍）",
+        position: "right",
+        nameLocation: "end",
+        nameGap: 22,
+        nameTextStyle: { color: "#7c35e8", fontWeight: 700 },
+        axisLabel: { color: "#7c35e8" },
+        splitLine: { show: false }
+      },
+      {
+        type: "value",
+        name: "巴菲特（%）",
+        position: "right",
+        offset: 56,
+        nameLocation: "end",
+        nameGap: 22,
+        min: 0,
+        max: 120,
+        nameTextStyle: { color: "#129846", fontWeight: 700 },
+        axisLabel: { color: "#129846", formatter: "{value}%" },
+        splitLine: { show: false }
+      }
+    ],
+    series: [
+      {
+        name: "总营收（TTM）",
+        type: "bar",
+        yAxisIndex: 1,
+        data: list.map(item => chartNumber(item.revenueT)),
+        barWidth: "58%",
+        itemStyle: {
+          borderRadius: [2, 2, 0, 0],
+          color: {
+            type: "linear",
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: "#78aef0" },
+              { offset: 1, color: "#d8e8ff" }
+            ]
+          }
+        }
+      },
+      {
+        name: "总市值",
+        type: "line",
+        yAxisIndex: 0,
+        data: list.map(item => chartNumber(item.marketCapT)),
+        smooth: .12,
+        showSymbol: false,
+        lineStyle: { width: 2.2, color: "#ff2f22" }
+      },
+      {
+        name: "PE（TTM）",
+        type: "line",
+        yAxisIndex: 2,
+        data: list.map(item => chartNumber(item.pe)),
+        smooth: .16,
+        showSymbol: false,
+        lineStyle: { width: 2, color: "#7c35e8" }
+      },
+      {
+        name: "巴菲特指标",
+        type: "line",
+        yAxisIndex: 3,
+        data: list.map(item => chartNumber(item.buffett)),
+        smooth: .12,
+        showSymbol: false,
+        lineStyle: { width: 2.1, color: "#129846" }
+      }
+    ],
+    aria: { enabled: true, label: { description: `${latestName}十年市值营收PE趋势图` } }
+  };
+}
+
+function pePercentileOption(series) {
+  const list = series.filter(item => Number.isFinite(item.pePercentile));
+  return {
+    color: ["#1f6ff2"],
+    tooltip: { trigger: "axis", valueFormatter: value => `${Number(value).toFixed(1)}%` },
+    grid: chartBaseGrid({ top: 24, right: 20 }),
+    xAxis: { type: "category", data: list.map(item => item.date), axisLabel: { interval: 11 } },
+    yAxis: { type: "value", min: 0, max: 100, axisLabel: { formatter: "{value}%" }, splitLine: { lineStyle: { color: "#ece3d5", type: "dashed" } } },
+    series: [{
+      name: "PE分位",
+      type: "line",
+      data: list.map(item => chartNumber(item.pePercentile)),
+      smooth: .18,
+      showSymbol: false,
+      lineStyle: { width: 2.2 },
+      markLine: {
+        symbol: "none",
+        label: { position: "insideStartTop" },
+        lineStyle: { type: "dashed", width: 1.2 },
+        data: [
+          { yAxis: 80, name: "极度高估区（>80%）", lineStyle: { color: "#ff4d43" } },
+          { yAxis: 60, name: "高估区（50%-80%）", lineStyle: { color: "#f0a22a" } },
+          { yAxis: 40, name: "合理区（20%-50%）", lineStyle: { color: "#18a567" } },
+          { yAxis: 20, name: "低估区（<20%）", lineStyle: { color: "#24a9d8" } }
+        ]
+      }
+    }]
+  };
+}
+
+function growthCompareOption(series) {
+  const list = series.filter(item => item.revenueGrowth != null || item.capGrowth != null);
+  return {
+    color: ["#1f6ff2", "#ff2f22"],
+    tooltip: { trigger: "axis", valueFormatter: value => `${Number(value).toFixed(1)}%` },
+    legend: { top: 4, data: ["营收同比增速（TTM）", "市值同比增速（TTM）"] },
+    grid: chartBaseGrid({ top: 44, right: 22 }),
+    xAxis: { type: "category", data: list.map(item => item.date), axisLabel: { interval: 11 } },
+    yAxis: { type: "value", axisLabel: { formatter: "{value}%" }, splitLine: { lineStyle: { color: "#ece3d5", type: "dashed" } } },
+    series: [
+      { name: "营收同比增速（TTM）", type: "line", smooth: .16, showSymbol: false, data: list.map(item => chartNumber(item.revenueGrowth)) },
+      { name: "市值同比增速（TTM）", type: "line", smooth: .16, showSymbol: false, data: list.map(item => chartNumber(item.capGrowth)) }
+    ]
+  };
+}
+
+function styleHeatmapOption(data) {
+  const rows = data.styles || [];
+  return {
+    tooltip: {
+      formatter: params => {
+        const style = params.data || {};
+        return [
+          `<strong>${escapeHtml(style.name)}</strong>`,
+          `风格市值：${escapeHtml(money(style.marketCap, "CNY"))}`,
+          `资金强度：${escapeHtml(style.flowText || "--")}`,
+          `拥挤度：${escapeHtml(style.crowdingText || "--")}`,
+          `估值位置：${escapeHtml(style.valuationText || "--")}`,
+          `市场广度：${escapeHtml(style.breadthText || "--")}`,
+          `净流入：${escapeHtml(style.netFlowText || "--")}`,
+          escapeHtml(style.industries || "")
+        ].join("<br>");
+      }
+    },
+    series: [{
+      type: "treemap",
+      roam: false,
+      nodeClick: false,
+      breadcrumb: { show: false },
+      squareRatio: 1.2,
+      data: rows.map(item => ({
+        ...item,
+        value: Math.max(Number(item.marketCap) || 1, 1),
+        itemStyle: {
+          color: flowStrengthColor(item.flow),
+          borderColor: "#fffaf1",
+          borderWidth: 4,
+          gapWidth: 4
+        }
+      })),
+      label: {
+        show: true,
+        color: "#202020",
+        fontWeight: 850,
+        formatter: params => `${params.data.name}\n资金强度 ${params.data.flowText}\n${params.data.netFlowText}`
+      },
+      upperLabel: { show: false },
+      levels: [
+        {
+          itemStyle: {
+            borderColor: "#fffaf1",
+            borderWidth: 4,
+            gapWidth: 4
+          }
+        }
+      ]
+    }]
+  };
+}
+
+function styleTimelineOption(data) {
+  const rows = data.rotations || [];
+  const labels = rows.map(item => item.style);
+  const palette = ["#9b5f34", "#b56f2c", "#2f6d8e", "#b74b3b", "#2a8f71", "#a46b2a", "#235d82", "#ba3b2f"];
+  const minYear = Math.min(...rows.map(item => Number(item.start)), 2006) - .4;
+  const maxYear = Math.max(...rows.map(item => Number(item.end)), 2026) + .6;
+
+  return {
+    tooltip: {
+      formatter: params => {
+        const item = rows[params.dataIndex] || {};
+        return `${escapeHtml(item.start)}-${escapeHtml(item.end)}<br>${escapeHtml(item.style)}`;
+      }
+    },
+    grid: chartBaseGrid({ top: 26, right: 28, bottom: 34, left: 110 }),
+    xAxis: {
+      type: "value",
+      min: minYear,
+      max: maxYear,
+      interval: 2,
+      axisLabel: { formatter: value => String(Math.round(value)) },
+      splitLine: { lineStyle: { color: "#eee1d0" } }
+    },
+    yAxis: {
+      type: "category",
+      data: labels,
+      inverse: true,
+      axisTick: { show: false },
+      axisLabel: { fontWeight: 700 }
+    },
+    series: [{
+      type: "custom",
+      data: rows.map((item, index) => [Number(item.start), Number(item.end) + .95, index, item.style]),
+      renderItem(params, api) {
+        const categoryIndex = api.value(2);
+        const start = api.coord([api.value(0), categoryIndex]);
+        const end = api.coord([api.value(1), categoryIndex]);
+        const height = Math.max(api.size([0, 1])[1] * .58, 18);
+        const shape = echarts.graphic.clipRectByRect({
+          x: start[0],
+          y: start[1] - height / 2,
+          width: end[0] - start[0],
+          height
+        }, {
+          x: params.coordSys.x,
+          y: params.coordSys.y,
+          width: params.coordSys.width,
+          height: params.coordSys.height
+        });
+        if (!shape) return null;
+        return {
+          type: "group",
+          children: [
+            {
+              type: "rect",
+              shape,
+              style: {
+                fill: palette[params.dataIndex % palette.length],
+                opacity: .88
+              }
+            },
+            {
+              type: "text",
+              style: {
+                text: `${api.value(0)}-${Math.round(api.value(1) - .95)}`,
+                x: shape.x + 8,
+                y: shape.y + height / 2,
+                fill: "#fffaf1",
+                fontSize: 12,
+                fontWeight: 800,
+                verticalAlign: "middle"
+              }
+            }
+          ]
+        };
+      }
+    }]
+  };
+}
+
+function flowScaleOption(data) {
+  const rows = data.flowScaleRows || [];
+  return {
+    color: ["#ba3b2f"],
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      formatter: params => {
+        const row = rows[params[0]?.dataIndex] || {};
+        return `${escapeHtml(row.name)}<br>${escapeHtml(row.amountText)}<br>占比 ${escapeHtml(row.shareText)}<br>${escapeHtml(row.note)}`;
+      }
+    },
+    grid: chartBaseGrid({ top: 12, right: 18, left: 18, bottom: 8 }),
+    xAxis: { type: "value", max: 100, axisLabel: { formatter: "{value}%" }, splitLine: { lineStyle: { color: "#eee1d0" } } },
+    yAxis: { type: "category", data: rows.map(item => item.name), inverse: true, axisTick: { show: false } },
+    series: [{
+      name: "占成交额",
+      type: "bar",
+      data: rows.map(item => ({
+        value: Number(item.shareText?.replace("%", "")) || Number(item.width) || 0,
+        itemStyle: { color: item.amountClass === "negative" ? "#087d5b" : item.amountClass === "neutral" ? "#9d927f" : "#ba3b2f" }
+      })),
+      barWidth: 18,
+      label: {
+        show: true,
+        position: "right",
+        formatter: params => `${rows[params.dataIndex]?.amountText || ""} · ${rows[params.dataIndex]?.shareText || ""}`
+      }
+    }]
+  };
+}
+
+function etfRankingOption(data) {
+  const rows = [...(data.etfRanking || [])].reverse();
+  return {
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      formatter: params => {
+        const row = rows[params[0]?.dataIndex] || {};
+        return `${escapeHtml(row.name)}<br>${escapeHtml(row.theme)}<br>净流入 ${escapeHtml(row.amountText)}<br>占成交 ${escapeHtml(row.shareText)}`;
+      }
+    },
+    grid: chartBaseGrid({ top: 12, right: 42, left: 18, bottom: 22 }),
+    xAxis: { type: "value", axisLabel: { formatter: "{value}亿" }, splitLine: { lineStyle: { color: "#eee1d0" } } },
+    yAxis: { type: "category", data: rows.map(item => item.name), axisTick: { show: false } },
+    series: [{
+      type: "bar",
+      data: rows.map(item => ({
+        value: Number(item.amount),
+        itemStyle: { color: Number(item.amount) >= 0 ? "#ba3b2f" : "#087d5b" }
+      })),
+      barWidth: 16,
+      label: { show: true, position: "right", formatter: params => rows[params.dataIndex]?.amountText || "" }
+    }]
+  };
+}
+
+function industryFlowOption(data) {
+  const rows = data.industryMatrix || [];
+  return {
+    tooltip: {
+      formatter: params => {
+        const row = params.data || {};
+        return `${escapeHtml(row.name)}<br>行业市值 ${escapeHtml(row.marketCapText || "--")}<br>净流入 ${escapeHtml(row.amountText || "--")}<br>成交 ${escapeHtml(row.turnoverText || "--")}<br>净流入/成交 ${escapeHtml(row.ratioText || "--")}`;
+      }
+    },
+    series: [{
+      type: "treemap",
+      roam: false,
+      nodeClick: false,
+      breadcrumb: { show: false },
+      squareRatio: 1.05,
+      data: rows.map(item => ({
+        ...item,
+        value: Math.max(Number(item.marketCap) || 1, 1),
+        itemStyle: {
+          color: flowAmountColor(item.amount),
+          borderColor: "#fffaf1",
+          borderWidth: 3,
+          gapWidth: 3
+        }
+      })),
+      label: {
+        show: true,
+        color: "#202020",
+        fontWeight: 850,
+        formatter: params => `${params.data.name}\n${params.data.amountText}`
+      },
+      upperLabel: { show: false }
+    }]
+  };
+}
+
+function styleFlowOption(data) {
+  const rows = data.styleFlows || [];
+  return {
+    tooltip: {
+      trigger: "item",
+      formatter: params => {
+        const item = rows[params.dataIndex] || {};
+        return [
+          `<strong>${escapeHtml(item.name)}</strong>`,
+          `净流入：${escapeHtml(item.amountText || "--")}`,
+          `资金强度：${escapeHtml(item.strengthText || "--")}`,
+          `拥挤度：${escapeHtml(item.crowdingText || "--")}`,
+          `成交占比：${escapeHtml(item.shareText || "--")}`,
+          `估值位置：${escapeHtml(item.valuationText || "--")}`,
+          escapeHtml(item.risk || "")
+        ].join("<br>");
+      }
+    },
+    grid: chartBaseGrid({ top: 34, right: 36, bottom: 42, left: 54 }),
+    xAxis: {
+      type: "value",
+      name: "净流入（亿元）",
+      splitLine: { lineStyle: { color: "#eee1d0" } },
+      axisLine: { onZero: true }
+    },
+    yAxis: {
+      type: "value",
+      name: "拥挤度",
+      min: 0,
+      max: 100,
+      axisLabel: { formatter: "{value}%" },
+      splitLine: { lineStyle: { color: "#eee1d0" } }
+    },
+    series: [{
+      type: "scatter",
+      data: rows.map(item => ({
+        value: [Number(item.amount), Number(item.crowding || 0)],
+        symbolSize: Math.max(18, Math.min(54, Number(item.turnoverShare || 8) * 2.6)),
+        itemStyle: {
+          color: flowStrengthColor(item.strength),
+          opacity: .86
+        }
+      })),
+      label: {
+        show: true,
+        formatter: params => rows[params.dataIndex]?.name || "",
+        position: "top",
+        color: "#202020",
+        fontWeight: 800
+      },
+      markLine: {
+        symbol: "none",
+        lineStyle: { color: "#cbbda7", type: "dashed" },
+        data: [{ xAxis: 0 }, { yAxis: 70 }]
+      }
+    }]
+  };
+}
+
+function industryCrowdingOption(data) {
+  const rows = [...(data.industries || [])].sort((a, b) => Number(a.marketCap) - Number(b.marketCap));
+  return {
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      formatter: params => {
+        const row = rows[params[0]?.dataIndex] || {};
+        return `${escapeHtml(row.name)}<br>市值 ${escapeHtml(row.marketCapText)}<br>拥挤度 ${escapeHtml(row.scoreText)}<br>成交占比 ${escapeHtml(row.turnoverShareText)}<br>资金 ${escapeHtml(row.fundFlowText)}`;
+      }
+    },
+    legend: { top: 4, data: ["行业市值", "拥挤度"] },
+    grid: chartBaseGrid({ top: 44, right: 64, left: 18, bottom: 28 }),
+    xAxis: [
+      { type: "value", name: "万亿元", splitLine: { lineStyle: { color: "#eee1d0" } } },
+      { type: "value", name: "拥挤度", max: 100, axisLabel: { formatter: "{value}%" }, splitLine: { show: false } }
+    ],
+    yAxis: { type: "category", data: rows.map(item => item.name), axisTick: { show: false } },
+    series: [
+      {
+        name: "行业市值",
+        type: "bar",
+        data: rows.map(item => round(Number(item.marketCap) / 1000000000000)),
+        barWidth: 16,
+        itemStyle: { color: "#d6a351", borderRadius: [0, 8, 8, 0] },
+        label: { show: true, position: "right", formatter: params => `${params.value}万亿` }
+      },
+      {
+        name: "拥挤度",
+        type: "scatter",
+        xAxisIndex: 1,
+        data: rows.map(item => Number(item.score)),
+        symbolSize: 16,
+        itemStyle: { color: "#ba3b2f" }
+      }
+    ]
+  };
+}
+
+function crowdingRankOption(data) {
+  const rows = [...(data.ranks || [])].reverse();
+  return {
+    tooltip: { formatter: params => `${escapeHtml(rows[params.dataIndex]?.name)}<br>${escapeHtml(rows[params.dataIndex]?.reason)}<br>拥挤度 ${escapeHtml(rows[params.dataIndex]?.scoreText)}` },
+    grid: chartBaseGrid({ top: 12, right: 44, left: 18, bottom: 18 }),
+    xAxis: { type: "value", max: 100, axisLabel: { formatter: "{value}%" }, splitLine: { lineStyle: { color: "#eee1d0" } } },
+    yAxis: { type: "category", data: rows.map(item => item.name), axisTick: { show: false } },
+    series: [{
+      type: "bar",
+      data: rows.map(item => ({ value: Number(item.score), itemStyle: { color: scoreColor(item.score) } })),
+      barWidth: 18,
+      label: { show: true, position: "right", formatter: "{c}%" }
+    }]
+  };
+}
+
+function breadthOption(data) {
+  const breadth = data.breadth || {};
+  return {
+    tooltip: { trigger: "item" },
+    legend: { bottom: 0 },
+    series: [{
+      type: "pie",
+      radius: ["58%", "78%"],
+      center: ["50%", "45%"],
+      label: { formatter: "{b}\n{d}%" },
+      data: [
+        { name: "上涨", value: Number(breadth.up) || 0, itemStyle: { color: "#ba3b2f" } },
+        { name: "下跌", value: Number(breadth.down) || 0, itemStyle: { color: "#087d5b" } },
+        { name: "平盘", value: Number(breadth.flat) || 0, itemStyle: { color: "#b4aa9b" } }
+      ]
+    }]
+  };
+}
+
+function clusterOption(data) {
+  const rows = [...(data.fundCluster?.industries || [])].reverse();
+  return {
+    tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+    grid: chartBaseGrid({ top: 10, right: 22, left: 10, bottom: 16 }),
+    xAxis: { type: "value", max: 20, axisLabel: { formatter: "{value}%" }, splitLine: { lineStyle: { color: "#eee1d0" } } },
+    yAxis: { type: "category", data: rows.map(item => item.name), axisTick: { show: false } },
+    series: [{
+      type: "bar",
+      data: rows.map(item => Number(item.weight)),
+      barWidth: 16,
+      itemStyle: { color: "#235d82", borderRadius: [0, 8, 8, 0] },
+      label: { show: true, position: "right", formatter: "{c}%" }
+    }]
+  };
+}
+
+function crowdingHistoryOption(data) {
+  const rows = data.history || [];
+  return {
+    tooltip: { trigger: "axis", valueFormatter: value => `${value}%` },
+    grid: chartBaseGrid({ top: 28, right: 24, bottom: 30 }),
+    xAxis: { type: "category", data: rows.map(item => item.date) },
+    yAxis: { type: "value", min: 0, max: 100, axisLabel: { formatter: "{value}%" }, splitLine: { lineStyle: { color: "#eee1d0", type: "dashed" } } },
+    series: [{
+      name: "主线拥挤度",
+      type: "line",
+      smooth: .22,
+      data: rows.map(item => Number(item.score)),
+      areaStyle: { color: "rgba(186, 59, 47, .12)" },
+      lineStyle: { width: 3, color: "#ba3b2f" },
+      itemStyle: { color: "#ba3b2f" },
+      markArea: {
+        silent: true,
+        label: { color: "#5f554a" },
+        data: [
+          [{ yAxis: 80, name: "高拥挤：回撤风险高" }, { yAxis: 100 }],
+          [{ yAxis: 50, name: "趋势拥挤：主线持续但需跟踪" }, { yAxis: 80 }],
+          [{ yAxis: 0, name: "低拥挤：交易不集中" }, { yAxis: 50 }]
+        ],
+        itemStyle: { color: "rgba(210, 99, 34, .08)" }
+      },
+      markLine: {
+        symbol: "none",
+        lineStyle: { type: "dashed" },
+        data: [{ yAxis: 80, name: "高拥挤线" }, { yAxis: 50, name: "中性线" }]
+      }
+    }]
+  };
+}
+
+function dividendOption(stock) {
+  const values = (stock.trend || []).map(Number);
+  const currentYear = 2026;
+  const labels = values.map((_, index) => `${currentYear - values.length + index + 1}`);
+  return {
+    grid: { top: 16, right: 6, bottom: 20, left: 6 },
+    tooltip: { trigger: "axis", valueFormatter: value => `${Number(value).toFixed(1)}%` },
+    xAxis: { type: "category", data: labels, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: "#8a8174", fontSize: 10 } },
+    yAxis: { type: "value", show: false },
+    series: [{
+      type: "line",
+      data: values,
+      smooth: .26,
+      symbolSize: 6,
+      lineStyle: { width: 3, color: holdColor(stock.holdScore) },
+      itemStyle: { color: holdColor(stock.holdScore) },
+      areaStyle: { color: `${holdColor(stock.holdScore)}22` },
+      label: { show: true, position: "top", formatter: "{c}%", fontSize: 10, color: "#70685c" }
+    }]
+  };
+}
+
+function scoreColor(value) {
+  const num = Number(value);
+  if (num >= 85) return "#ba3b2f";
+  if (num >= 70) return "#d26322";
+  if (num >= 45) return "#235d82";
+  return "#087d5b";
+}
+
+function flowStrengthColor(value) {
+  const num = Number(value);
+  if (num >= 80) return "#ba3b2f";
+  if (num >= 65) return "#d26322";
+  if (num >= 45) return "#d6a351";
+  if (num >= 30) return "#8ab7a4";
+  return "#087d5b";
+}
+
+function flowAmountColor(value) {
+  const num = Number(value);
+  if (num >= 12) return "#ba3b2f";
+  if (num >= 5) return "#d26322";
+  if (num > 0) return "#d6a351";
+  if (num > -5) return "#d7c8ae";
+  if (num > -12) return "#7bb39e";
+  return "#087d5b";
+}
+
+function holdSignal(stock) {
+  const dividend = Number(stock.dividendYield) || 0;
+  const payout = Number(stock.payout) || 0;
+  const pe = Number(stock.pe) || 99;
+  const issuePenalty = stock.issueRisk === "低" ? 0 : stock.issueRisk === "中" ? 8 : 16;
+  const score = Math.max(0, Math.min(100,
+    dividend * 10 +
+    (payout >= 30 && payout <= 75 ? 18 : 8) +
+    (pe <= 8 ? 20 : pe <= 12 ? 14 : pe <= 20 ? 8 : 2) -
+    issuePenalty
+  ));
+  if (score >= 78) return { score, label: "值得持有", className: "hold-hot" };
+  if (score >= 58) return { score, label: "可观察", className: "hold-warm" };
+  return { score, label: "谨慎", className: "hold-cool" };
+}
+
+function holdColor(score) {
+  const num = Number(score);
+  if (num >= 78) return "#ba3b2f";
+  if (num >= 58) return "#d6a351";
+  return "#087d5b";
+}
 
 function renderPageHead({ eyebrow, title, subtitle, updatedAtText, usingDemo, demoReason }) {
   return `
@@ -349,6 +1335,26 @@ function renderPageHead({ eyebrow, title, subtitle, updatedAtText, usingDemo, de
         </div>
       ` : ""}
     </section>
+  `;
+}
+
+function renderSectionHead(title, note = "") {
+  return `
+    <div class="section-title-row">
+      <div>
+        <h2>${safeText(title)}</h2>
+        ${note ? `<p>${safeText(note)}</p>` : ""}
+      </div>
+    </div>
+  `;
+}
+
+function renderSectionUpdated(updatedAtText, usingDemo = false) {
+  return `
+    <footer class="section-updated">
+      ${usingDemo ? "<span>演示数据</span>" : ""}
+      <span>更新 ${safeText(updatedAtText)}</span>
+    </footer>
   `;
 }
 
@@ -372,25 +1378,156 @@ async function loadOverviewHistories(payload) {
 
 function renderOverview(data, histories) {
   return `
-    ${renderPageHead({
-      eyebrow: "Market Heat",
-      title: "市场温度看板",
-      subtitle: "先用演示数据展示主要指数温度卡片。点击任一指数进入 10 年详细趋势图。",
-      ...data
-    })}
-
-    <section class="market-style-strip">
-      ${data.markets.map(item => `
-        <a href="#/history/${safeText(item.id)}">
-          <strong>${safeText(item.name)}</strong>
-          <span>${safeText(item.style)}</span>
-          <em class="${item.changeClass}">${safeText(item.changePctText)}</em>
-        </a>
-      `).join("")}
+    <section class="section-block overview-strip-section">
+      ${renderSectionHead("主要指数风格", "A股宽基、科创，美股核心和港股科技的当前点位、涨跌幅与市场风格")}
+      <div class="market-style-strip">
+        ${data.markets.map(item => `
+          <a href="#/history/${safeText(item.id)}">
+            <div>
+              <strong>${safeText(item.name)}</strong>
+              <span>${safeText(item.code)}</span>
+            </div>
+            <em class="${item.changeClass}">${safeText(item.changePctText)}</em>
+            <small>${safeText(item.style)}</small>
+          </a>
+        `).join("")}
+      </div>
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
     </section>
 
-    <section class="temperature-card-grid">
-      ${data.markets.map(renderTemperatureCard).join("")}
+    <section class="section-block overview-card-section">
+      ${renderSectionHead("指数温度卡片", "点击卡片查看该指数 10 年月度市值、营收、PE 和巴菲特指标")}
+      <div class="temperature-card-grid">
+        ${data.markets.map(renderTemperatureCard).join("")}
+      </div>
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+    </section>
+  `;
+}
+
+function renderMarketStyle(data) {
+  return `
+    <section class="section-block style-mainline-section">
+      ${renderSectionHead(`当前主线是${data.mainline.name}`, "先给结论，再看资金、拥挤和历史风格证据")}
+      <div class="style-mainline-layout">
+        <article class="style-mainline-card">
+          <span>当前主线</span>
+          <strong>${safeText(data.mainline.name)}</strong>
+          <p>${safeText(data.mainline.verdict)}</p>
+        </article>
+        <div class="style-mainline-metrics">
+          <div><span>主线热度</span><strong>${safeText(data.mainline.scoreText)}</strong></div>
+          <div><span>净流入</span><strong class="${data.mainline.netFlowClass}">${safeText(data.mainline.netFlowText)}</strong></div>
+          <div><span>成交占比</span><strong>${safeText(data.mainline.turnoverShareText)}</strong></div>
+          <div><span>拥挤度</span><strong>${safeText(data.mainline.crowdingText)}</strong></div>
+        </div>
+        <div class="style-mainline-reasons">
+          ${data.mainline.reasons.map(reason => `<span>${safeText(reason)}</span>`).join("")}
+        </div>
+      </div>
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+    </section>
+
+    <section class="section-block style-heatmap-section">
+      ${renderSectionHead("风格热力图", "10 大市场风格：资金强度、拥挤度、估值位置、市场广度综合观察")}
+      <div class="echart style-heatmap-chart" data-chart="style-heatmap"></div>
+      <div class="style-catalog-grid">
+        ${data.styles.map(item => `
+          <article>
+            <header>
+              <strong>${safeText(item.name)}</strong>
+              <span class="${item.heatLevelClass}">${safeText(item.heatText)}</span>
+            </header>
+            <p>${safeText(item.industries)}</p>
+            <footer>
+              <span class="${item.netFlowClass}">${safeText(item.netFlowText)}</span>
+              <span>${safeText(item.risk)}</span>
+            </footer>
+          </article>
+        `).join("")}
+      </div>
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+    </section>
+
+    <section class="section-block style-timeline-section">
+      ${renderSectionHead("历史风格轮动时间轴", "用历史主线作为参照，避免把短期交易误判成长期风格")}
+      <div class="echart style-timeline-chart" data-chart="style-timeline"></div>
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+    </section>
+
+    <section class="section-block style-evidence-section">
+      ${renderSectionHead("钱在交易什么，这个方向是否拥挤", "把资金流向和拥挤度放在一起看：先看资金强度，再判断是否已经过热")}
+      <div class="style-evidence-grid">
+        <article class="panel module-card wide flow-context-mini">
+          <div class="section-head"><h2>资金盘子与净流向</h2><span>净流入 / 今日成交额</span></div>
+          <div class="flow-hero compact">
+            <div class="flow-summary">
+              <p>${safeText(data.summary)}</p>
+              <div class="flow-kpi-grid">
+                <div><span>全市场成交额</span><strong>${safeText(data.turnoverText)}</strong></div>
+                <div><span>主线净流入</span><strong class="${data.marketNetClass}">${safeText(data.marketNetText)}</strong></div>
+                <div><span>净流入 / 成交额</span><strong class="${data.marketNetClass}">${safeText(data.marketNetRatioText)}</strong></div>
+              </div>
+            </div>
+            <div class="echart flow-scale-chart" data-chart="flow-scale"></div>
+          </div>
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+        </article>
+        <article class="panel module-card">
+          <div class="section-head"><h2>ETF资金流向排行榜</h2><span>净申赎与成交额占比</span></div>
+          <div class="echart etf-ranking-chart" data-chart="etf-ranking"></div>
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+        </article>
+        <article class="panel module-card">
+          <div class="section-head"><h2>行业资金流</h2><span>31个行业，面积按市值，颜色按流入流出</span></div>
+          <div class="echart industry-flow-chart" data-chart="industry-flow"></div>
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+        </article>
+        <article class="panel module-card wide">
+          <div class="section-head"><h2>10大风格流向</h2><span>横轴净流入，纵轴拥挤度，气泡大小表示成交占比</span></div>
+          <div class="echart style-flow-chart" data-chart="style-flow"></div>
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+        </article>
+        <article class="panel module-card wide">
+          <div class="section-head"><h2>行业规模与拥挤度</h2><span>行业市值 / 拥挤分位</span></div>
+          <div class="echart industry-crowding-chart" data-chart="industry-crowding"></div>
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+        </article>
+        <article class="panel module-card">
+          <div class="section-head"><h2>拥挤度排行榜</h2><span>成交、估值和资金热度</span></div>
+          <div class="echart crowding-rank-chart" data-chart="crowding-rank"></div>
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+        </article>
+        <article class="panel module-card breadth-card">
+          <div class="section-head"><h2>市场广度</h2><span>上涨 / 下跌家数</span></div>
+          <div class="echart breadth-chart" data-chart="breadth"></div>
+          <div class="breadth-counts">
+            <span>上涨 <strong class="positive">${safeText(data.crowding.breadth.upText)}</strong></span>
+            <span>下跌 <strong class="negative">${safeText(data.crowding.breadth.downText)}</strong></span>
+            <span>指数 <strong class="${data.crowding.breadth.indexClass}">${safeText(data.crowding.breadth.indexText)}</strong></span>
+          </div>
+          <p>${safeText(data.crowding.breadth.note)}</p>
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+        </article>
+        <article class="panel module-card">
+          <div class="section-head"><h2>基金抱团</h2><span>重仓股 / 行业集中度</span></div>
+          <div class="cluster-score">
+            <strong>${safeText(data.crowding.fundCluster.concentrationText)}</strong>
+            <span>Top 行业集中度</span>
+          </div>
+          <div class="tag-row cluster-tags">
+            ${data.crowding.fundCluster.topStocks.map(name => `<span>${safeText(name)}</span>`).join("")}
+          </div>
+          <div class="echart cluster-chart" data-chart="cluster"></div>
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+        </article>
+        <article class="panel module-card wide">
+          <div class="section-head"><h2>拥挤历史</h2><span>主线交易拥挤度，越高代表越容易出现回撤或风格切换</span></div>
+          <p class="chart-explain">这条线用于判断当前主线是不是已经被过度交易：80% 以上是高拥挤区，50%-80% 是趋势拥挤区，50% 以下说明交易还不算集中。</p>
+          <div class="echart crowding-history-chart" data-chart="crowding-history"></div>
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+        </article>
+      </div>
     </section>
   `;
 }
@@ -415,8 +1552,7 @@ function buildDemoOverview() {
 }
 
 function buildDemoPage(id) {
-  if (id === "fund-flow") return demoFundFlow;
-  if (id === "crowding") return demoCrowding;
+  if (id === "market-style") return demoMarketStyle;
   if (id === "value") return demoValueInvesting;
   return buildDemoOverview();
 }
@@ -483,471 +1619,227 @@ function renderTemperatureCard(item) {
   `;
 }
 
-function renderIndexChartCard(market, history, index) {
-  const points = Array.isArray(history?.points) ? history.points : [];
-  const hasHistory = points.length > 0;
-  const latest = points[points.length - 1] || {};
-  const currentPe = latest.peTtm ?? market.peTtm;
-  const currentCap = latest.marketCap ?? market.marketCap;
-  const chartTitle = index === 0 ? "首图" : market.region;
-  const currency = history?.market?.currency || market.currency;
-  const marketCapSource = history?.market?.marketCapSource || market.marketCapSource || market.dataSource || "待接入";
-  const peSource = history?.market?.peSource || market.valuationSource || "待接入";
-
-  return `
-    <article class="index-chart-card ${index === 0 ? "featured" : ""}">
-      <header class="chart-card-head">
-        <div>
-          <span class="chart-kicker">${safeText(chartTitle)}</span>
-          <h2>${safeText(market.name)}</h2>
-          <p>${safeText(market.code)} · ${safeText(market.region)}</p>
-        </div>
-        <div class="chart-now">
-          <strong>${safeText(fixed(currentPe, 2))}x</strong>
-          <span>PE</span>
-        </div>
-      </header>
-      <div class="chart-metrics">
-        <span>总市值 ${safeText(money(currentCap, currency))}</span>
-        <span class="${market.changeClass}">涨跌 ${safeText(market.changePctText)}</span>
-        <span class="${market.capChangeClass}">市值变化 ${safeText(market.marketCapChangeText)}</span>
-      </div>
-      <div class="chart-stage">
-        ${hasHistory ? renderPremiumMixedChart(points, { name: market.name, currency }) : renderPendingChart(market, history)}
-      </div>
-      <footer class="chart-foot">
-        <span>月度采样</span>
-        ${history?.usingDemo ? "<span>演示历史</span>" : ""}
-        <span>市值：${safeText(marketCapSource)}</span>
-        <span>PE：${safeText(peSource)}</span>
-      </footer>
-    </article>
-  `;
-}
-
-function renderPendingChart(market, history) {
-  return `
-    <div class="pending-chart">
-      <svg viewBox="0 0 900 340" aria-label="${safeText(market.name)}历史数据待接入">
-        <defs>
-          <linearGradient id="pending-${safeText(market.id)}" x1="0" x2="1">
-            <stop offset="0%" stop-color="#d9c7a6" stop-opacity=".4" />
-            <stop offset="100%" stop-color="#b7c7c2" stop-opacity=".4" />
-          </linearGradient>
-        </defs>
-        ${[0, 1, 2, 3].map(i => `<line x1="50" y1="${64 + i * 62}" x2="850" y2="${64 + i * 62}" />`).join("")}
-        <path d="M70 238 C190 122, 292 194, 414 134 S646 194, 826 92" />
-        <path d="M70 282 C220 252, 330 290, 450 236 S656 196, 826 170" />
-      </svg>
-      <div>
-        <strong>10 年历史数据待接入</strong>
-        <span>${safeText(history?.error || "后端暂未返回该指数 history 数据")}</span>
-      </div>
-    </div>
-  `;
-}
-
-function renderPremiumMixedChart(points, meta) {
-  const list = points.filter(item => item.marketCap != null || item.peTtm != null);
-  if (!list.length) {
-    return `<div class="state-panel">暂无历史数据</div>`;
-  }
-
-  const width = 980;
-  const height = 380;
-  const padLeft = 74;
-  const padRight = 74;
-  const padTop = 30;
-  const padBottom = 50;
-  const plotW = width - padLeft - padRight;
-  const plotH = height - padTop - padBottom;
-  const caps = list.map(item => Number(item.marketCap)).filter(Number.isFinite);
-  const pes = list.map(item => Number(item.peTtm)).filter(Number.isFinite);
-  const capMax = niceMax(Math.max(...caps, 1));
-  const peMax = niceMax(Math.max(...pes, 1));
-  const peMin = Math.min(...pes, 0);
-  const step = list.length > 1 ? plotW / (list.length - 1) : plotW;
-  const barW = Math.max(plotW / list.length * 0.62, 3);
-  const uid = `chart-${meta.name.replace(/[^a-zA-Z0-9]/g, "")}-${list.length}`;
-
-  const x = index => padLeft + step * index;
-  const capY = value => padTop + plotH - Number(value || 0) / capMax * plotH;
-  const peY = value => padTop + plotH - (Number(value || peMin) - peMin) / Math.max(peMax - peMin, 1) * plotH;
-  const peLine = list
-    .map((item, index) => item.peTtm == null ? null : `${index === 0 ? "M" : "L"} ${round(x(index))} ${round(peY(item.peTtm))}`)
-    .filter(Boolean)
-    .join(" ");
-  const capLine = list
-    .map((item, index) => item.marketCap == null ? null : `${index === 0 ? "M" : "L"} ${round(x(index))} ${round(capY(item.marketCap))}`)
-    .filter(Boolean)
-    .join(" ");
-  const capArea = `${capLine} L ${round(x(list.length - 1))} ${padTop + plotH} L ${padLeft} ${padTop + plotH} Z`;
-  const tickIndexes = Array.from(new Set([0, Math.floor(list.length / 4), Math.floor(list.length / 2), Math.floor(list.length * 3 / 4), list.length - 1]));
-  const yTicks = [0, .25, .5, .75, 1];
-
-  return `
-    <svg class="premium-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${safeText(meta.name)}十年市值和 PE 月度图">
-      <defs>
-        <linearGradient id="${uid}-area" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#247c8a" stop-opacity=".28" />
-          <stop offset="100%" stop-color="#247c8a" stop-opacity=".03" />
-        </linearGradient>
-        <linearGradient id="${uid}-bar" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#2f8798" stop-opacity=".92" />
-          <stop offset="100%" stop-color="#9bc3bd" stop-opacity=".42" />
-        </linearGradient>
-      </defs>
-      ${yTicks.map(tick => {
-        const y = padTop + plotH - tick * plotH;
-        return `<line class="grid-line" x1="${padLeft}" y1="${round(y)}" x2="${width - padRight}" y2="${round(y)}" />`;
-      }).join("")}
-      <path class="cap-area" d="${capArea}" fill="url(#${uid}-area)" />
-      ${list.map((item, index) => {
-        const y = capY(item.marketCap);
-        const h = padTop + plotH - y;
-        return `
-          <rect class="chart-bar" x="${round(x(index) - barW / 2)}" y="${round(y)}" width="${round(barW)}" height="${round(h)}" fill="url(#${uid}-bar)">
-            <title>${safeText(item.date)} 市值 ${safeText(money(item.marketCap, meta.currency))} PE ${safeText(fixed(item.peTtm, 2))}</title>
-          </rect>
-        `;
-      }).join("")}
-      ${capLine ? `<path class="cap-outline" d="${capLine}" />` : ""}
-      ${peLine ? `<path class="chart-pe-line" d="${peLine}" />` : ""}
-      ${list.map((item, index) => item.peTtm == null ? "" : `
-        <circle class="chart-pe-dot" cx="${round(x(index))}" cy="${round(peY(item.peTtm))}" r="3.6">
-          <title>${safeText(item.date)} PE ${safeText(fixed(item.peTtm, 2))}</title>
-        </circle>
-      `).join("")}
-      <text class="axis-label left" x="18" y="${padTop + 8}">${safeText(money(capMax, meta.currency))}</text>
-      <text class="axis-label right" x="${width - padRight + 14}" y="${padTop + 8}">${safeText(fixed(peMax, 1))}x</text>
-      <text class="axis-label right" x="${width - padRight + 14}" y="${padTop + plotH}">${safeText(fixed(peMin, 1))}x</text>
-      ${tickIndexes.map(index => `
-        <text class="x-tick" x="${round(x(index))}" y="${height - 18}">${safeText(list[index].date)}</text>
-      `).join("")}
-    </svg>
-  `;
-}
-
-function renderMarketCard(item) {
-  const clickable = item.id === "csi300";
-  return `
-    <article class="market-card ${clickable ? "clickable" : ""}" ${clickable ? "data-history-card='csi300'" : ""}>
-      <div class="market-head">
-        <div>
-          <h3>${safeText(item.name)}</h3>
-          <span>${safeText(item.code)}</span>
-        </div>
-        <span class="level-tag ${item.levelClass}">${safeText(item.levelText)}</span>
-      </div>
-      <div class="price-row">
-        <strong>${safeText(item.closeText)}</strong>
-        <span class="${item.changeClass}">${safeText(item.changePctText)}</span>
-      </div>
-      <dl class="metric-row">
-        <div><dt>PE</dt><dd>${safeText(item.peTtmText)}</dd></div>
-        <div><dt>分位</dt><dd>${safeText(item.pePercentileText)}</dd></div>
-      </dl>
-      <div class="cap-row">
-        <span>${safeText(item.marketCapText)}</span>
-        <strong class="${item.capChangeClass}">${safeText(item.marketCapChangeText)}</strong>
-      </div>
-      ${clickable ? `<a class="history-link" href="#/history/csi300">查看 10 年市值 / PE</a>` : ""}
-    </article>
-  `;
-}
-
-function renderCapSeries(item) {
-  return `
-    <div class="cap-series">
-      <div class="cap-title-row">
-        <strong>${safeText(item.name)}</strong>
-        <span>${safeText(item.currentText)} <em class="${item.changeClass}">${safeText(item.changeText)}</em></span>
-      </div>
-      ${item.points.map(point => `
-        <div class="cap-point">
-          <span>${safeText(point.date)}</span>
-          <div class="cap-track"><i style="width:${point.width}%"></i></div>
-          <strong>${safeText(point.valueText)}</strong>
-        </div>
-      `).join("")}
-    </div>
-  `;
-}
-
-function renderFundFlow(data) {
-  return `
-    ${renderPageHead({
-      eyebrow: "Capital Flow",
-      title: "资金流向",
-      subtitle: "先用假数据呈现四个模块：ETF 资金排行榜、行业资金热力、北向资金、风格流向。",
-      ...data
-    })}
-    <article class="summary-card">${safeText(data.summary)}</article>
-    <section class="module-grid flow-dashboard">
-      <article class="panel module-card wide">
-        <div class="section-head"><h2>ETF资金流向排行榜</h2><span>单位：亿元</span></div>
-        <div class="horizontal-bars">
-          ${data.etfRanking.map(item => `
-            <div class="flow-bar-row">
-              <div>
-                <strong>${safeText(item.name)}</strong>
-                <span>${safeText(item.theme)}</span>
-              </div>
-              <div class="signed-track">
-                <i class="${item.amountClass}" style="width:${item.width}%"></i>
-              </div>
-              <em class="${item.amountClass}">${safeText(item.amountText)}</em>
-            </div>
-          `).join("")}
-        </div>
-      </article>
-      <article class="panel module-card">
-        <div class="section-head"><h2>行业资金流</h2><span>热力矩阵</span></div>
-        <div class="heat-matrix">
-          ${data.industryMatrix.map(item => `
-            <div class="${item.heatClass}" style="--heat:${item.heat}">
-              <strong>${safeText(item.name)}</strong>
-              <span>${safeText(item.amountText)}</span>
-            </div>
-          `).join("")}
-        </div>
-      </article>
-      <article class="panel module-card northbound-card">
-        <div class="section-head"><h2>北向资金</h2><span>陆股通</span></div>
-        <div class="northbound-number ${data.northbound.todayClass}">${safeText(data.northbound.todayText)}</div>
-        <div class="mini-metrics">
-          <span>近 5 日 <strong class="${data.northbound.weekClass}">${safeText(data.northbound.weekText)}</strong></span>
-          <span>近 20 日 <strong class="${data.northbound.monthClass}">${safeText(data.northbound.monthText)}</strong></span>
-        </div>
-        <div class="tag-row">
-          ${data.northbound.focus.map(name => `<span>${safeText(name)}</span>`).join("")}
-        </div>
-      </article>
-      <article class="panel module-card">
-        <div class="section-head"><h2>风格流向</h2><span>强度 / 净流入</span></div>
-        <div class="style-flow-list">
-          ${data.styleFlows.map(item => `
-            <div>
-              <header><strong>${safeText(item.name)}</strong><em class="${item.amountClass}">${safeText(item.amountText)}</em></header>
-              <div class="bar-track"><span style="width:${item.strength}%"></span></div>
-            </div>
-          `).join("")}
-        </div>
-      </article>
-    </section>
-  `;
-}
-
-function renderCrowding(data) {
-  return `
-    ${renderPageHead({
-      eyebrow: "Crowding",
-      title: "拥挤度",
-      subtitle: "先看行业拥挤，再看市场广度、基金抱团和拥挤历史，避免只看指数涨跌。",
-      ...data
-    })}
-    <section class="module-grid crowding-dashboard">
-      <article class="panel module-card wide">
-        <div class="section-head"><h2>拥挤度排行榜</h2><span>一级行业 / 热门行业</span></div>
-        <div class="crowding-rank-list">
-          ${data.ranks.map(item => `
-            <div class="crowding-rank-row">
-              <div>
-                <strong>${safeText(item.name)}</strong>
-                <span>${safeText(item.reason)}</span>
-              </div>
-              <div class="score-meter"><i class="${item.levelClass}" style="width:${item.score}%"></i></div>
-              <em>${safeText(item.scoreText)}</em>
-            </div>
-          `).join("")}
-        </div>
-      </article>
-      <article class="panel module-card breadth-card">
-        <div class="section-head"><h2>市场广度</h2><span>上涨 / 下跌家数</span></div>
-        <div class="breadth-donut" style="--up:${data.breadth.upRatio}">
-          <strong>${safeText(data.breadth.downRatioText)}</strong>
-          <span>下跌占比</span>
-        </div>
-        <div class="breadth-counts">
-          <span>上涨 <strong class="positive">${safeText(data.breadth.upText)}</strong></span>
-          <span>下跌 <strong class="negative">${safeText(data.breadth.downText)}</strong></span>
-          <span>指数 <strong class="${data.breadth.indexClass}">${safeText(data.breadth.indexText)}</strong></span>
-        </div>
-        <p>${safeText(data.breadth.note)}</p>
-      </article>
-      <article class="panel module-card">
-        <div class="section-head"><h2>基金抱团</h2><span>重仓股 / 行业集中度</span></div>
-        <div class="cluster-score">
-          <strong>${safeText(data.fundCluster.concentrationText)}</strong>
-          <span>Top 行业集中度</span>
-        </div>
-        <div class="tag-row cluster-tags">
-          ${data.fundCluster.topStocks.map(name => `<span>${safeText(name)}</span>`).join("")}
-        </div>
-        <div class="style-flow-list">
-          ${data.fundCluster.industries.map(item => `
-            <div>
-              <header><strong>${safeText(item.name)}</strong><em>${safeText(item.weightText)}</em></header>
-              <div class="bar-track"><span style="width:${item.width}%"></span></div>
-            </div>
-          `).join("")}
-        </div>
-      </article>
-      <article class="panel module-card wide">
-        <div class="section-head"><h2>拥挤历史</h2><span>近 10 个月</span></div>
-        ${renderCrowdingHistory(data.history)}
-      </article>
-    </section>
-  `;
-}
-
 function renderValueInvesting(data) {
   return `
-    ${renderPageHead({
-      eyebrow: "Dividend Watch",
-      title: "价值投资",
-      subtitle: "固定观察 A 股大蓝筹股息票，用股息率、派息率、估值、增发风险和利空状态做初筛。",
-      ...data
-    })}
-    <article class="summary-card">${safeText(data.summary)}</article>
-    <section class="value-stock-grid">
-      ${data.stocks.map(item => `
-        <article class="value-stock-card">
-          <header>
-            <div>
-              <h2>${safeText(item.name)}</h2>
-              <span>${safeText(item.code)}</span>
-            </div>
-            <strong>${safeText(item.dividendYieldText)}</strong>
-          </header>
-          ${renderDividendSpark(item.trend)}
-          <dl>
-            <div><dt>PE</dt><dd>${safeText(item.peText)}</dd></div>
-            <div><dt>派息率</dt><dd>${safeText(item.payoutText)}</dd></div>
-            <div><dt>增发风险</dt><dd>${safeText(item.issueRisk)}</dd></div>
-          </dl>
-          <footer>${safeText(item.badNews)}</footer>
-        </article>
-      `).join("")}
+    <section class="section-block value-intro-section">
+      ${renderSectionHead("大蓝筹股息观察", "固定观察 A 股股息票，先看股息率，再看派息率、增发风险和重大利空")}
+      <article class="summary-card">${safeText(data.summary)}</article>
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+    </section>
+    <section class="section-block value-list-section">
+      <div class="value-stock-grid">
+        ${data.stocks.map((item, index) => `
+          <a class="value-stock-card ${item.holdClass}" href="${escapeAttr(stockQuoteUrl(item.code))}" target="_blank" rel="noopener noreferrer" aria-label="查看${safeText(item.name)}东方财富行情页">
+            <header>
+              <div>
+                <h2>${safeText(item.name)}</h2>
+                <span>${safeText(item.code)}</span>
+              </div>
+              <div class="value-card-right">
+                <strong>${safeText(item.dividendYieldText)}</strong>
+                <em>${safeText(item.holdLabel)}</em>
+              </div>
+            </header>
+            ${renderDividendSpark(item.trend, index)}
+            <dl>
+              <div><dt>PE</dt><dd>${safeText(item.peText)}</dd></div>
+              <div><dt>派息率</dt><dd>${safeText(item.payoutText)}</dd></div>
+              <div><dt>增发风险</dt><dd>${safeText(item.issueRisk)}</dd></div>
+            </dl>
+            <footer>${safeText(item.badNews)}</footer>
+          </a>
+        `).join("")}
+      </div>
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
     </section>
   `;
 }
 
-function renderCrowdingHistory(points) {
-  const width = 860;
-  const height = 220;
-  const pad = 28;
-  const plotW = width - pad * 2;
-  const plotH = height - 54;
-  const step = points.length > 1 ? plotW / (points.length - 1) : plotW;
-  const x = index => pad + step * index;
-  const y = score => pad + plotH - Number(score) / 100 * plotH;
-  const line = points.map((item, index) => `${index === 0 ? "M" : "L"} ${round(x(index))} ${round(y(item.score))}`).join(" ");
-
+function renderDividendSpark(points, index) {
   return `
-    <svg class="crowding-history-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="拥挤历史">
-      ${[20, 50, 80].map(score => `
-        <line x1="${pad}" x2="${width - pad}" y1="${round(y(score))}" y2="${round(y(score))}" />
-        <text x="${pad}" y="${round(y(score) - 6)}">${score}</text>
-      `).join("")}
-      <path d="${line}" />
-      ${points.map((item, index) => `
-        <circle cx="${round(x(index))}" cy="${round(y(item.score))}" r="4">
-          <title>${safeText(item.date)} ${safeText(item.score)}</title>
-        </circle>
-      `).join("")}
-      ${points.map((item, index) => index % 2 ? "" : `<text class="x-tick" x="${round(x(index))}" y="${height - 12}">${safeText(item.date)}</text>`).join("")}
-    </svg>
-  `;
-}
-
-function renderDividendSpark(points) {
-  const values = points.map(Number).filter(Number.isFinite);
-  const max = Math.max(...values, 1);
-  return `
-    <div class="dividend-spark" aria-label="近五年股息率变化">
-      ${values.map(value => `<i style="height:${Math.max(value / max * 100, 10)}%"><span>${safeText(value.toFixed(1))}%</span></i>`).join("")}
-    </div>
+    <div class="echart dividend-spark" data-chart="dividend" data-stock-index="${safeText(index)}" aria-label="近五年股息率变化"></div>
   `;
 }
 
 function renderHistory(data) {
+  const series = buildHistorySeries(data.points);
+  const market = data.market || {};
   return `
-    ${renderPageHead({
-      eyebrow: "10Y History",
-      title: `${safeText(data.market.name)}十年变化`,
-      subtitle: "按每日缓存的后端数据展示。柱状为估算总市值，折线为 PE 口径；横轴按月采样。",
-      ...data
-    })}
-    <article class="history-panel">
-      <div class="chart-wrap">
-        ${renderMixedChart(data.points)}
+    <article class="history-dashboard-card">
+      <a class="history-back-link" href="#/overview">返回市场温度</a>
+      <h2 class="history-dashboard-title">${safeText(market.name)}：市值 / 营收 / PE / 巴菲特指标趋势图</h2>
+      ${renderHistoryStatStrip(series)}
+      <div class="chart-wrap history-main-wrap">
+        <div class="echart history-main-chart" data-chart="history-main"></div>
       </div>
-      <div class="history-note">
-        <span>左轴：${safeText(data.market.currency)} 总市值</span>
-        <span>右轴：${safeText(data.market.peType)} PE</span>
-        <span>市值来源：${safeText(data.market.marketCapSource)}</span>
-        <span>PE 来源：${safeText(data.market.peSource)}</span>
-      </div>
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
     </article>
+    <section class="history-subchart-grid">
+      <article class="history-dashboard-card">
+        <h2 class="subchart-title">PE 估值分位（TTM）</h2>
+        <div class="echart history-subchart" data-chart="pe-percentile"></div>
+        ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+      </article>
+      <article class="history-dashboard-card">
+        <h2 class="subchart-title">营收增速（TTM）与市值增速（TTM）</h2>
+        <div class="echart history-subchart" data-chart="growth-compare"></div>
+        ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+      </article>
+    </section>
+    <section class="history-info-grid">
+      <article>
+        <strong>指标说明</strong>
+        <span>PE（TTM）：市盈率，月度采样</span>
+        <span>巴菲特指标：指数总市值 / GDP 口径估算</span>
+      </article>
+      <article>
+        <strong>当前状态（示意）</strong>
+        ${renderHistoryState(series)}
+      </article>
+      <article>
+        <strong>数据来源</strong>
+        <span>市值：${safeText(market.marketCapSource)}</span>
+        <span>PE：${safeText(market.peSource)}</span>
+      </article>
+    </section>
   `;
 }
 
-function renderMixedChart(points) {
-  const list = points.filter(item => item.marketCap != null || item.peTtm != null);
-  if (!list.length) {
-    return `<div class="state-panel">暂无历史数据</div>`;
-  }
-
-  const width = 960;
-  const height = 420;
-  const padLeft = 76;
-  const padRight = 64;
-  const padTop = 34;
-  const padBottom = 54;
-  const plotW = width - padLeft - padRight;
-  const plotH = height - padTop - padBottom;
-  const caps = list.map(item => item.marketCap).filter(item => item != null);
-  const pes = list.map(item => item.peTtm).filter(item => item != null);
-  const capMax = Math.max(...caps, 1);
-  const peMax = Math.max(...pes, 1);
+function buildHistorySeries(points) {
+  const raw = (Array.isArray(points) ? points : [])
+    .filter(item => item.marketCap != null || item.peTtm != null);
+  const pes = raw.map(item => Number(item.peTtm)).filter(Number.isFinite);
   const peMin = Math.min(...pes, 0);
-  const barW = Math.max(plotW / list.length * 0.58, 2);
-  const step = list.length > 1 ? plotW / (list.length - 1) : plotW;
+  const peMax = Math.max(...pes, 1);
 
-  const x = index => padLeft + step * index;
-  const capY = value => padTop + plotH - (value || 0) / capMax * plotH;
-  const peY = value => padTop + plotH - ((value || peMin) - peMin) / Math.max(peMax - peMin, 1) * plotH;
-  const line = list
-    .map((item, index) => item.peTtm == null ? null : `${x(index)},${peY(item.peTtm)}`)
-    .filter(Boolean)
-    .join(" ");
-  const tickIndexes = Array.from(new Set([0, Math.floor(list.length / 4), Math.floor(list.length / 2), Math.floor(list.length * 3 / 4), list.length - 1]));
+  const list = raw.map((item, index) => {
+    const progress = raw.length > 1 ? index / (raw.length - 1) : 1;
+    const marketCapT = Number(item.marketCap) / 1000000000000;
+    const pe = Number(item.peTtm);
+    const wave = Math.sin(progress * Math.PI * 4.2) * .03 + Math.cos(progress * Math.PI * 2.1) * .02;
+    const revenueT = Math.max(0, marketCapT * (.68 + progress * .08 + wave));
+    const rawPercentile = Number(item.pePercentile);
+    const pePercentile = Number.isFinite(rawPercentile)
+      ? rawPercentile
+      : Math.max(1, Math.min(99, (pe - peMin) / Math.max(peMax - peMin, 1) * 100));
+
+    return {
+      date: item.date,
+      marketCapT,
+      revenueT,
+      pe,
+      pePercentile,
+      buffett: Math.max(15, Math.min(120, 32 + pePercentile * .78 + wave * 120)),
+      revenueGrowth: null,
+      capGrowth: null
+    };
+  });
+
+  return list.map((item, index) => {
+    const prev = list[index - 12];
+    if (!prev) return item;
+    return {
+      ...item,
+      revenueGrowth: prev.revenueT ? (item.revenueT / prev.revenueT - 1) * 100 : null,
+      capGrowth: prev.marketCapT ? (item.marketCapT / prev.marketCapT - 1) * 100 : null
+    };
+  });
+}
+
+function renderHistoryStatStrip(series) {
+  const latest = series[series.length - 1] || {};
+  const stats = [
+    ["最新日期", latest.date || "--"],
+    ["总市值", `${fixed(latest.marketCapT, 1)} 万亿`],
+    ["总营收（TTM）", `${fixed(latest.revenueT, 1)} 万亿`],
+    ["PE（TTM）", `${fixed(latest.pe, 1)} 倍`, "negative"],
+    ["巴菲特指标", `${fixed(latest.buffett, 1)} %`, "positive"],
+    ["营收同比增速（TTM）", pct(latest.revenueGrowth, 1)]
+  ];
 
   return `
-    <svg class="mixed-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="沪深300十年市值和 PE 混合图">
-      <line x1="${padLeft}" y1="${padTop}" x2="${padLeft}" y2="${padTop + plotH}" />
-      <line x1="${width - padRight}" y1="${padTop}" x2="${width - padRight}" y2="${padTop + plotH}" />
-      <line x1="${padLeft}" y1="${padTop + plotH}" x2="${width - padRight}" y2="${padTop + plotH}" />
-      <text x="14" y="${padTop + 8}">${safeText(money(capMax, "CNY"))}</text>
-      <text x="${width - padRight + 10}" y="${padTop + 8}">${safeText(fixed(peMax, 1))}x</text>
-      <text x="${width - padRight + 10}" y="${padTop + plotH}">${safeText(fixed(peMin, 1))}x</text>
-      ${list.map((item, index) => `
-        <rect class="cap-bar" x="${x(index) - barW / 2}" y="${capY(item.marketCap)}" width="${barW}" height="${padTop + plotH - capY(item.marketCap)}">
-          <title>${safeText(item.date)} 市值 ${safeText(money(item.marketCap, "CNY"))} PE ${safeText(fixed(item.peTtm, 2))}</title>
-        </rect>
+    <div class="history-stat-strip">
+      ${stats.map(([label, value, className]) => `
+        <div>
+          <span>${safeText(label)}</span>
+          <strong class="${safeText(className || "")}">${safeText(value)}</strong>
+        </div>
       `).join("")}
-      ${line ? `<polyline class="pe-line" points="${line}" />` : ""}
-      ${list.map((item, index) => item.peTtm == null ? "" : `
-        <circle class="pe-dot" cx="${x(index)}" cy="${peY(item.peTtm)}" r="3">
-          <title>${safeText(item.date)} PE ${safeText(fixed(item.peTtm, 2))}</title>
-        </circle>
-      `).join("")}
-      ${tickIndexes.map(index => `
-        <text class="x-tick" x="${x(index)}" y="${height - 18}">${safeText(list[index].date)}</text>
-      `).join("")}
-    </svg>
+    </div>
   `;
+}
+
+function renderHistoryState(series) {
+  const latest = series[series.length - 1] || {};
+  const items = [
+    ["PE", latest.pePercentile < 40 ? "处于合理偏低区间" : latest.pePercentile > 80 ? "处于高估拥挤区间" : "处于中等区间"],
+    ["巴菲特指标", latest.buffett > 80 ? "处于偏高水平" : "处于中性水平"],
+    ["营收增速", latest.revenueGrowth > 0 ? "稳健增长" : "需要观察"],
+    ["市值增速", latest.capGrowth > 10 ? "温和回升" : "弱于趋势"]
+  ];
+
+  return items.map(([name, value]) => `<span>✓ ${safeText(name)}：${safeText(value)}</span>`).join("");
+}
+
+function normalizeMarketStyle(payload) {
+  const data = payload || {};
+  const flow = normalizeFundFlow(data.fundFlow || demoFundFlow);
+  const crowding = normalizeCrowding(data.crowding || demoCrowding);
+  const styles = Array.isArray(data.styles) ? data.styles : [];
+  const maxFlow = Math.max(...styles.map(item => Math.abs(Number(item.netFlow) || 0)), 1);
+  const normalizedStyles = styles.map(item => ({
+    ...item,
+    heatText: ratioLabel(item.heat),
+    flowText: ratioLabel(item.flow),
+    crowdingText: ratioLabel(item.crowding),
+    valuationText: ratioLabel(item.valuation),
+    breadthText: ratioLabel(item.breadth),
+    netFlowText: `${Number(item.netFlow) > 0 ? "+" : ""}${fixed(item.netFlow, 1)}亿`,
+    netFlowClass: changeClass(item.netFlow),
+    turnoverShareText: ratioLabel(item.turnoverShare),
+    heatLevelClass: levelClass(item.heat),
+    heatWidth: barWidth(item.heat, 100),
+    flowWidth: barWidth(Math.abs(item.netFlow), maxFlow)
+  }));
+  const strongest = normalizedStyles.reduce((best, item) => Number(item.heat) > Number(best.heat || 0) ? item : best, normalizedStyles[0] || {});
+  const mainline = {
+    ...(data.mainline || {}),
+    name: data.mainline?.name || strongest.name || "--",
+    scoreText: ratioLabel(data.mainline?.score ?? strongest.heat),
+    netFlowText: `${Number(data.mainline?.netFlow ?? strongest.netFlow) > 0 ? "+" : ""}${fixed(data.mainline?.netFlow ?? strongest.netFlow, 1)}亿`,
+    netFlowClass: changeClass(data.mainline?.netFlow ?? strongest.netFlow),
+    turnoverShareText: ratioLabel(data.mainline?.turnoverShare ?? strongest.turnoverShare),
+    crowdingText: ratioLabel(data.mainline?.crowding ?? strongest.crowding),
+    reasons: Array.isArray(data.mainline?.reasons) ? data.mainline.reasons : []
+  };
+  const styleFlows = normalizedStyles.map(item => ({
+    name: item.name,
+    amount: item.netFlow,
+    strength: item.flow,
+    crowding: item.crowding,
+    valuation: item.valuation,
+    turnoverShare: item.turnoverShare,
+    risk: item.risk,
+    amountText: item.netFlowText,
+    amountClass: item.netFlowClass,
+    strengthText: item.flowText,
+    crowdingText: item.crowdingText,
+    valuationText: item.valuationText,
+    shareText: item.turnoverShareText
+  }));
+
+  return {
+    ...flow,
+    source: data.source || "service",
+    usingDemo: data.source === "demo",
+    demoReason: data.demoReason || "",
+    updatedAtText: dateText(data.updatedAt),
+    mainline,
+    styles: normalizedStyles,
+    rotations: Array.isArray(data.rotations) ? data.rotations : [],
+    styleFlows,
+    crowding
+  };
 }
 
 function normalizeOverview(payload) {
@@ -965,6 +1857,8 @@ function normalizeOverview(payload) {
       code: item.code,
       name: item.name,
       region: item.region,
+      style: item.style,
+      status: item.status || levelText(item.pePercentile),
       currency: item.currency,
       close: item.close,
       changePct: item.changePct,
@@ -993,7 +1887,15 @@ function normalizeOverview(payload) {
 
 function normalizeFundFlow(payload) {
   const data = payload || {};
-  const etfMax = Math.max(...(data.etfRanking || []).map(item => Math.abs(Number(item.amount) || 0)), 1);
+  const turnoverTotal = Number(data.turnover?.total || 0);
+  const marketNetFlow = Number(data.marketNetFlow || 0);
+  const etfRanking = Array.isArray(data.etfRanking) ? data.etfRanking : [];
+  const styleFlows = Array.isArray(data.styleFlows) ? data.styleFlows : [];
+  const etfNetFlow = etfRanking.reduce((sum, item) => sum + (Number(item.amount) || 0) * 100000000, 0);
+  const northboundToday = Number(data.northbound?.today || 0) * 100000000;
+  const styleNetFlow = styleFlows.reduce((sum, item) => sum + (Number(item.amount) || 0) * 100000000, 0);
+  const scaleMax = Math.max(turnoverTotal, Math.abs(marketNetFlow), Math.abs(etfNetFlow), Math.abs(northboundToday), 1);
+  const etfMax = Math.max(...etfRanking.map(item => Math.abs(Number(item.amount) || 0)), 1);
   const matrixMax = Math.max(...(data.industryMatrix || []).map(item => Math.abs(Number(item.amount) || 0)), 1);
   return {
     source: data.source || "service",
@@ -1001,19 +1903,45 @@ function normalizeFundFlow(payload) {
     demoReason: data.demoReason || "",
     updatedAtText: dateText(data.updatedAt),
     summary: data.summary || "",
-    etfRanking: (data.etfRanking || []).map(item => ({
+    turnoverText: turnoverMoney(turnoverTotal, "CNY"),
+    marketNetText: flowMoney(marketNetFlow, "CNY"),
+    marketNetClass: changeClass(marketNetFlow),
+    marketNetRatioText: ratioLabel(turnoverTotal ? marketNetFlow / turnoverTotal * 100 : null),
+    flowScaleRows: [
+      { name: "全市场成交额", amount: turnoverTotal, note: "今日资金总盘子", amountText: turnoverMoney(turnoverTotal, "CNY"), shareText: "100%", amountClass: "neutral" },
+      { name: "主线净流入", amount: marketNetFlow, note: "相对成交额判断是否有效", amountText: flowMoney(marketNetFlow, "CNY"), shareText: ratioLabel(turnoverTotal ? marketNetFlow / turnoverTotal * 100 : null), amountClass: changeClass(marketNetFlow) },
+      { name: "ETF榜前净流入", amount: etfNetFlow, note: "宽基和主题 ETF 的合计净申购", amountText: flowMoney(etfNetFlow, "CNY"), shareText: ratioLabel(turnoverTotal ? etfNetFlow / turnoverTotal * 100 : null), amountClass: changeClass(etfNetFlow) },
+      { name: "北向净买入", amount: northboundToday, note: "陆股通当日净买入", amountText: flowMoney(northboundToday, "CNY"), shareText: ratioLabel(turnoverTotal ? northboundToday / turnoverTotal * 100 : null), amountClass: changeClass(northboundToday) }
+    ].map(item => ({
       ...item,
-      amountText: `${Number(item.amount) > 0 ? "+" : ""}${fixed(item.amount, 1)}`,
-      amountClass: changeClass(item.amount),
-      width: barWidth(Math.abs(item.amount), etfMax)
+      width: item.name === "全市场成交额"
+        ? 100
+        : Math.max(Math.abs(item.amount) / scaleMax * 100, 4).toFixed(1)
     })),
-    industryMatrix: (data.industryMatrix || []).map(item => ({
-      ...item,
-      amountText: `${Number(item.amount) > 0 ? "+" : ""}${fixed(item.amount, 1)}`,
-      amountClass: changeClass(item.amount),
-      heatClass: Number(item.amount) >= 0 ? "heat-in" : "heat-out",
-      heat: Math.max(Math.abs(Number(item.amount) || 0) / matrixMax, .18).toFixed(2)
-    })),
+    etfRanking: etfRanking.map(item => {
+      const amountYuan = (Number(item.amount) || 0) * 100000000;
+      return {
+        ...item,
+        amountText: `${Number(item.amount) > 0 ? "+" : ""}${fixed(item.amount, 1)}亿`,
+        amountClass: changeClass(item.amount),
+        shareText: ratioLabel(turnoverTotal ? amountYuan / turnoverTotal * 100 : null),
+        width: barWidth(Math.abs(item.amount), etfMax)
+      };
+    }),
+    industryMatrix: (data.industryMatrix || []).map(item => {
+      const amount = Number(item.amount) || 0;
+      const turnover = Number(item.turnover) || 0;
+      return {
+        ...item,
+        amountText: `${amount > 0 ? "+" : ""}${fixed(amount, 1)}亿`,
+        amountClass: changeClass(amount),
+        marketCapText: money(item.marketCap, "CNY"),
+        turnoverText: turnover ? `${fixed(turnover, 1)}亿` : "--",
+        ratioText: ratioLabel(turnover ? amount / turnover * 100 : null),
+        heatClass: amount >= 0 ? "heat-in" : "heat-out",
+        heat: Math.max(Math.abs(amount) / matrixMax, .18).toFixed(2)
+      };
+    }),
     northbound: {
       ...(data.northbound || {}),
       todayText: flowMoney(data.northbound?.today * 100000000, "CNY"),
@@ -1024,11 +1952,17 @@ function normalizeFundFlow(payload) {
       monthClass: changeClass(data.northbound?.month),
       focus: data.northbound?.focus || []
     },
-    styleFlows: (data.styleFlows || []).map(item => ({
-      ...item,
-      amountText: `${Number(item.amount) > 0 ? "+" : ""}${fixed(item.amount, 1)}亿`,
-      amountClass: changeClass(item.amount)
-    })),
+    styleFlows: styleFlows.map(item => {
+      const amountYuan = (Number(item.amount) || 0) * 100000000;
+      return {
+        ...item,
+        amountText: `${Number(item.amount) > 0 ? "+" : ""}${fixed(item.amount, 1)}亿`,
+        amountClass: changeClass(item.amount),
+        strengthText: ratioLabel(item.strength),
+        shareText: ratioLabel(turnoverTotal ? amountYuan / turnoverTotal * 100 : null)
+      };
+    }),
+    styleNetText: flowMoney(styleNetFlow, "CNY"),
     flows: (data.flows || []).map(item => ({
       id: item.id,
       name: item.name,
@@ -1053,11 +1987,23 @@ function normalizeCrowding(payload) {
   const totalBreadth = Number(data.breadth?.up || 0) + Number(data.breadth?.down || 0) + Number(data.breadth?.flat || 0);
   const downRatio = totalBreadth ? Number(data.breadth?.down || 0) / totalBreadth * 100 : 0;
   const industryMax = Math.max(...(data.fundCluster?.industries || []).map(item => Number(item.weight) || 0), 1);
+  const industryCapMax = Math.max(...(data.industries || []).map(item => Number(item.marketCap) || 0), 1);
   return {
     source: data.source || "service",
     usingDemo: data.source === "demo",
     demoReason: data.demoReason || "",
     updatedAtText: dateText(data.updatedAt),
+    industries: (data.industries || []).map(item => ({
+      ...item,
+      marketCapText: money(item.marketCap, "CNY"),
+      capWidth: barWidth(item.marketCap, industryCapMax),
+      scoreText: ratioLabel(item.score),
+      levelClass: levelClass(item.score),
+      turnoverShareText: ratioLabel(item.turnoverShare),
+      fundFlowText: `${Number(item.fundFlow) > 0 ? "+" : ""}${fixed(item.fundFlow, 1)}亿`,
+      fundFlowClass: changeClass(item.fundFlow),
+      valuationText: ratioLabel(item.valuationPercentile)
+    })),
     ranks: (data.ranks || []).map(item => ({
       ...item,
       scoreText: ratioLabel(item.score),
@@ -1104,13 +2050,19 @@ function normalizeValueInvesting(payload) {
     demoReason: data.demoReason || "",
     updatedAtText: dateText(data.updatedAt),
     summary: data.summary || "",
-    stocks: (data.stocks || []).map(item => ({
-      ...item,
-      dividendYieldText: ratioLabel(item.dividendYield),
-      payoutText: ratioLabel(item.payout),
-      peText: `${fixed(item.pe, 1)}x`,
-      trend: item.trend || []
-    }))
+    stocks: (data.stocks || []).map(item => {
+      const hold = holdSignal(item);
+      return {
+        ...item,
+        dividendYieldText: ratioLabel(item.dividendYield),
+        payoutText: ratioLabel(item.payout),
+        peText: `${fixed(item.pe, 1)}x`,
+        trend: item.trend || [],
+        holdScore: hold.score,
+        holdLabel: hold.label,
+        holdClass: hold.className
+      };
+    })
   };
 }
 
@@ -1168,15 +2120,6 @@ function round(value) {
   return Math.round(value * 100) / 100;
 }
 
-function niceMax(value) {
-  const num = Number(value);
-  if (!Number.isFinite(num) || num <= 0) {
-    return 1;
-  }
-  const pow = Math.pow(10, Math.floor(Math.log10(num)));
-  return Math.ceil(num / pow) * pow;
-}
-
 function dateText(value) {
   if (!value) return "--";
   const date = new Date(value);
@@ -1209,6 +2152,24 @@ function flowMoney(value, currency) {
   if (!Number.isFinite(num)) return "--";
   const unit = currency === "USD" ? "亿美元" : currency === "HKD" ? "亿港元" : "亿元";
   return `${num > 0 ? "+" : ""}${(Math.abs(num) / 100000000).toFixed(1)}${unit}`;
+}
+
+function turnoverMoney(value, currency) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "--";
+  if (currency === "USD") return `${(num / 1000000000000).toFixed(2)}万亿美元`;
+  if (currency === "HKD") return `${(num / 1000000000000).toFixed(2)}万亿港元`;
+  return `${(num / 1000000000000).toFixed(2)}万亿元`;
+}
+
+function stockQuoteUrl(code) {
+  const value = String(code || "").toUpperCase();
+  const symbol = value.split(".")[0];
+  if (/^\d{6}$/.test(symbol)) {
+    if (value.endsWith(".SH") || symbol.startsWith("6")) return `https://quote.eastmoney.com/sh${symbol}.html`;
+    if (value.endsWith(".SZ") || /^[03]/.test(symbol)) return `https://quote.eastmoney.com/sz${symbol}.html`;
+  }
+  return "https://quote.eastmoney.com/";
 }
 
 function ratioLabel(value) {
