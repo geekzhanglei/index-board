@@ -33,20 +33,13 @@ jobs:
 
       - name: Configure SSH
         env:
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_KNOWN_HOSTS: ${{ secrets.SERVER_KNOWN_HOSTS }}
           SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
         run: |
           mkdir -p ~/.ssh
           printf '%s\n' "$SERVER_SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          for attempt in 1 2 3 4 5; do
-            ssh-keyscan -T 20 -H "$SERVER_HOST" >> ~/.ssh/known_hosts && break
-            if [ "$attempt" = "5" ]; then
-              echo "ssh-keyscan failed after $attempt attempts"
-              exit 1
-            fi
-            sleep 5
-          done
+          printf '%s\n' "$SERVER_KNOWN_HOSTS" > ~/.ssh/known_hosts
 
       - name: Upload artifact
         run: scp -i ~/.ssh/deploy_key index-board-dist.tar.gz "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/index-board-dist.tar.gz"
