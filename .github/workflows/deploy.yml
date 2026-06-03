@@ -42,16 +42,31 @@ jobs:
           printf '%s\n' "$SERVER_KNOWN_HOSTS" > ~/.ssh/known_hosts
 
       - name: Upload artifact
-        run: scp -i ~/.ssh/deploy_key index-board-dist.tar.gz "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/index-board-dist.tar.gz"
+        run: |
+          for attempt in 1 2 3 4 5; do
+            scp -i ~/.ssh/deploy_key index-board-dist.tar.gz "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/index-board-dist.tar.gz" && break
+            if [ "$attempt" = "5" ]; then
+              echo "scp upload failed after $attempt attempts"
+              exit 1
+            fi
+            sleep 8
+          done
 
       - name: Deploy on server
         run: |
-          ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" '
-            set -e
-            APP_DIR=/www/frontEnd/index-board
-            RELEASE_DIR="$APP_DIR/releases/${{ github.sha }}"
-            mkdir -p "$RELEASE_DIR"
-            tar -xzf /tmp/index-board-dist.tar.gz -C "$RELEASE_DIR"
-            ln -sfn "$RELEASE_DIR" "$APP_DIR/current"
-            rm -f /tmp/index-board-dist.tar.gz
-          '
+          for attempt in 1 2 3 4 5; do
+            ssh -i ~/.ssh/deploy_key "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" '
+              set -e
+              APP_DIR=/www/frontEnd/index-board
+              RELEASE_DIR="$APP_DIR/releases/${{ github.sha }}"
+              mkdir -p "$RELEASE_DIR"
+              tar -xzf /tmp/index-board-dist.tar.gz -C "$RELEASE_DIR"
+              ln -sfn "$RELEASE_DIR" "$APP_DIR/current"
+              rm -f /tmp/index-board-dist.tar.gz
+            ' && break
+            if [ "$attempt" = "5" ]; then
+              echo "remote deploy failed after $attempt attempts"
+              exit 1
+            fi
+            sleep 8
+          done
