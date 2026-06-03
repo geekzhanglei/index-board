@@ -19,21 +19,34 @@ jobs:
         with:
           node-version: "24"
 
+      - name: Setup pnpm
+        run: corepack enable
+
       - name: Check
-        run: npm run check
+        run: pnpm run check
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
 
       - name: Pack artifact
         run: tar -czf index-board-dist.tar.gz -C dist .
 
       - name: Configure SSH
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/deploy_key
+          printf '%s\n' "$SERVER_SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts
+          for attempt in 1 2 3 4 5; do
+            ssh-keyscan -T 20 -H "$SERVER_HOST" >> ~/.ssh/known_hosts && break
+            if [ "$attempt" = "5" ]; then
+              echo "ssh-keyscan failed after $attempt attempts"
+              exit 1
+            fi
+            sleep 5
+          done
 
       - name: Upload artifact
         run: scp -i ~/.ssh/deploy_key index-board-dist.tar.gz "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/index-board-dist.tar.gz"
