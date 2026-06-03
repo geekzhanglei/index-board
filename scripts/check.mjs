@@ -1,5 +1,6 @@
 import { access, readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { spawnSync } from "node:child_process";
 
 const requiredFiles = [
   "src/index.html",
@@ -36,6 +37,15 @@ for (const endpoint of [
 for (const secret of ["SERVER_HOST", "SERVER_USER", "SERVER_SSH_KEY"]) {
   if (!workflow.includes(secret)) {
     throw new Error(`deploy workflow does not reference ${secret}`);
+  }
+}
+
+for (const file of ["src/main.js", "src/data.js"]) {
+  const result = spawnSync(process.execPath, ["--check", file], {
+    encoding: "utf8"
+  });
+  if (result.status !== 0) {
+    throw new Error(result.stderr || result.stdout || `${file} syntax check failed`);
   }
 }
 
