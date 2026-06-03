@@ -25,7 +25,7 @@ for (const endpoint of [
   "/blogapi/market/overview",
   "/blogapi/market/fund-flow",
   "/blogapi/market/crowding",
-  "/blogapi/market/consensus",
+  "/blogapi/market/value",
   "/blogapi/market/history"
 ]) {
   if (!js.includes(endpoint)) {

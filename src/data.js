@@ -58,16 +58,16 @@ const overview = {
       currency: "CNY"
     },
     {
-      id: "chinext",
-      code: "399006.SZ",
-      name: "创业板",
+      id: "star50",
+      code: "000688.SH",
+      name: "科创50",
       region: "A股",
-      close: 3950.94,
-      changePct: -2.15,
-      peTtm: 41.2,
-      pePercentile: 78,
-      marketCap: 20972725970296,
-      marketCapChangePct: 28.5,
+      close: 1086.43,
+      changePct: 1.86,
+      peTtm: 48.2,
+      pePercentile: 76,
+      marketCap: 6400000000000,
+      marketCapChangePct: 22.4,
       currency: "CNY"
     },
     {
@@ -232,58 +232,64 @@ const crowding = {
   ]
 };
 
-const consensus = {
-  source: "demo",
-  updatedAt: "2026-06-01T18:00:00+08:00",
-  summary: "抱团方向集中在 AI 算力、红利低波与出海制造，成长方向热度最高但波动也最大。",
-  directions: [
-    {
-      id: "ai-compute",
-      rank: 1,
-      name: "AI算力",
-      strength: 86,
-      change: 12.4,
-      description: "成交占比和北向持仓同步上升，拥挤度偏高。",
-      topNames: ["通信设备", "半导体", "服务器"]
-    },
-    {
-      id: "dividend",
-      rank: 2,
-      name: "红利低波",
-      strength: 74,
-      change: 3.6,
-      description: "资金防守仓位仍在，估值抬升较慢。",
-      topNames: ["银行", "公用事业", "煤炭"]
-    },
-    {
-      id: "export",
-      rank: 3,
-      name: "出海制造",
-      strength: 67,
-      change: -1.8,
-      description: "景气度仍强，但短期资金轮动放缓。",
-      topNames: ["家电", "工程机械", "汽车零部件"]
-    },
-    {
-      id: "hk-internet",
-      rank: 4,
-      name: "港股互联网",
-      strength: 63,
-      change: 6.1,
-      description: "南向资金净流入支撑，估值修复延续。",
-      topNames: ["互联网平台", "创新药", "消费服务"]
-    }
-  ]
+const historySeeds = {
+  csi300: { cap: 55439553622422, pe: 16.1, name: "沪深300", code: "000300.SH", currency: "CNY" },
+  csi800: { cap: 73934268165916, pe: 16.6, name: "中证800", code: "000906.SH", currency: "CNY" },
+  csi1000: { cap: 16377616426542, pe: 35.4, name: "中证1000", code: "000852.SH", currency: "CNY" },
+  star50: { cap: 6400000000000, pe: 48.2, name: "科创50", code: "000688.SH", currency: "CNY" },
+  hsi: { cap: 41500000000000, pe: 12.7, name: "港股", code: "HSI.HK", currency: "HKD" },
+  hstech: { cap: 9300000000000, pe: 22.5, name: "恒生科技", code: "HSTECH.HK", currency: "HKD" },
+  nasdaq: { cap: 33000000000000, pe: 30, name: "纳斯达克", code: "COMP.US", currency: "USD" },
+  sp500: { cap: 67799545340000, pe: 28.45, name: "标普500", code: "SPX.US", currency: "USD" }
 };
+
+function buildHistoryPayload(id) {
+  const seed = historySeeds[id] || historySeeds.csi300;
+  const points = [];
+  const now = new Date("2026-06-01T00:00:00+08:00");
+  const startCap = seed.cap * 0.52;
+  const startPe = seed.pe * 0.76;
+
+  for (let i = 0; i <= 120; i++) {
+    const date = new Date(now);
+    date.setMonth(date.getMonth() - (120 - i));
+    const progress = i / 120;
+    const cycle = Math.sin(progress * Math.PI * 4.4) * 0.09 + Math.cos(progress * Math.PI * 2.2) * 0.06;
+    const drawdown = Math.sin((progress - 0.18) * Math.PI * 7) * 0.045;
+    points.push({
+      date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`,
+      marketCap: startCap + (seed.cap - startCap) * progress + seed.cap * (cycle + drawdown),
+      peTtm: Math.max(5, startPe + (seed.pe - startPe) * progress + seed.pe * cycle * 0.72),
+      pePercentile: Math.max(1, Math.min(99, Math.round(45 + progress * 34 + cycle * 180)))
+    });
+  }
+
+  return {
+    source: "demo",
+    updatedAt: "2026-06-01T18:00:00+08:00",
+    market: {
+      id,
+      code: seed.code,
+      name: seed.name,
+      currency: seed.currency,
+      peType: "ttm",
+      marketCapSource: "demo-monthly",
+      peSource: "demo-monthly"
+    },
+    points
+  };
+}
 
 const mockPayloads = {
   "/blogapi/market/overview": overview,
   "/blogapi/market/fund-flow": fundFlow,
-  "/blogapi/market/crowding": crowding,
-  "/blogapi/market/consensus": consensus
+  "/blogapi/market/crowding": crowding
 };
 
-export function getMockPayload(path) {
+export function getMockPayload(path, data = {}) {
+  if (path === "/blogapi/market/history") {
+    return buildHistoryPayload(data.id || "csi300");
+  }
   return mockPayloads[path] ? structuredClone(mockPayloads[path]) : null;
 }
 
@@ -309,7 +315,7 @@ export async function requestMarket(path, params = {}) {
 
     return body.data;
   } catch (error) {
-    const fallback = getMockPayload(path);
+    const fallback = getMockPayload(path, params);
     if (ENABLE_DEMO_FALLBACK && fallback) {
       fallback.source = "demo";
       fallback.demoReason = error.message || "自有服务接口暂未返回数据";
