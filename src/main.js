@@ -2,9 +2,22 @@ import { requestMarket } from "./data.js";
 import * as echarts from "./vendor/echarts.esm.min.js";
 
 const routes = [
-  { id: "overview", label: "市场温度", endpoint: "/blogapi/market/overview" },
-  { id: "market-style", label: "市场风格", endpoint: "/blogapi/market/style" },
+  { id: "overview", label: "大盘概览", endpoint: "/blogapi/market/overview" },
+  { id: "market-style", label: "资金流向", endpoint: "/blogapi/market/style" },
   { id: "value", label: "价值投资", endpoint: "/blogapi/market/value" }
+];
+
+const demoGlobalMarketCaps = [
+  { name: "美国", cap: 62400000000000, note: "全球最大权益市场，科技与消费龙头集中" },
+  { name: "中国A股", cap: 11800000000000, note: "全球第二梯队核心市场，政策和产业周期影响大" },
+  { name: "日本", cap: 6900000000000, note: "制造业、金融和股东回报改革主导" },
+  { name: "印度", cap: 5200000000000, note: "高增长新兴市场，估值长期偏高" },
+  { name: "英国", cap: 3500000000000, note: "金融、能源和防御型资产占比较高" },
+  { name: "加拿大", cap: 3300000000000, note: "资源、金融和周期行业权重大" },
+  { name: "法国", cap: 3200000000000, note: "奢侈品、工业和金融权重高" },
+  { name: "德国", cap: 2700000000000, note: "制造业和出口链代表性强" },
+  { name: "瑞士", cap: 2400000000000, note: "医药、消费和金融防御属性强" },
+  { name: "中国香港", cap: 4300000000000, note: "中国资产离岸定价核心市场，科技与金融权重高" }
 ];
 
 const demoIndexCards = [
@@ -562,10 +575,10 @@ function render() {
   disposeCharts();
   app.innerHTML = `
     <header class="topbar">
-      <a class="brand" href="#/overview" aria-label="市场温度看板">
+      <a class="brand" href="#/overview" aria-label="大盘概览">
         <span class="brand-mark">M</span>
         <span>
-          <strong>市场温度看板</strong>
+          <strong>大盘概览</strong>
           <small>money.feroad.com</small>
         </span>
       </a>
@@ -632,6 +645,10 @@ function mountCharts() {
     mountChart("growth-compare", growthCompareOption(series));
   } else {
     const route = currentRoute();
+    if (route.id === "overview") {
+      const data = normalizeOverview(state.data);
+      mountChart("global-market-capacity", globalMarketCapacityOption(data));
+    }
     if (route.id === "market-style") {
       const data = normalizeMarketStyle(state.data);
       mountChart("style-heatmap", styleHeatmapOption(data));
@@ -870,6 +887,66 @@ function growthCompareOption(series) {
       { name: "营收同比增速（TTM）", type: "line", smooth: .16, showSymbol: false, data: list.map(item => chartNumber(item.revenueGrowth)) },
       { name: "市值同比增速（TTM）", type: "line", smooth: .16, showSymbol: false, data: list.map(item => chartNumber(item.capGrowth)) }
     ]
+  };
+}
+
+function globalMarketCapacityOption(data) {
+  const rows = [...(data.globalMarketCaps || [])].sort((a, b) => Number(a.cap) - Number(b.cap));
+  const maxCap = Math.max(...rows.map(item => Number(item.cap) || 0), 1);
+  return {
+    color: ["#c86b5a"],
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      formatter: params => {
+        const row = rows[params[0]?.dataIndex] || {};
+        return [
+          `<strong>${escapeHtml(row.name)}</strong>`,
+          `市值容量：${escapeHtml(row.capText || "--")}`,
+          `约为美国市场的 ${escapeHtml(row.usRatioText || "--")}`,
+          escapeHtml(row.note || "")
+        ].join("<br>");
+      }
+    },
+    grid: chartBaseGrid({ top: 18, right: 92, left: 18, bottom: 20 }),
+    xAxis: {
+      type: "value",
+      axisLabel: { formatter: value => `${value}万亿美元` },
+      splitLine: { lineStyle: { color: "#eee1d0" } }
+    },
+    yAxis: {
+      type: "category",
+      data: rows.map(item => item.name),
+      axisTick: { show: false },
+      axisLabel: { fontWeight: 700 }
+    },
+    series: [{
+      name: "股票市场总市值",
+      type: "bar",
+      data: rows.map(item => {
+        const value = Number(item.cap) / 1000000000000;
+        const isCore = item.name === "美国" || item.name === "中国A股" || item.name === "中国香港";
+        return {
+          value: round(value),
+          itemStyle: {
+            color: isCore ? "#c86b5a" : "#d8c4a3",
+            borderRadius: [0, 8, 8, 0]
+          }
+        };
+      }),
+      barWidth: 18,
+      label: {
+        show: true,
+        position: "right",
+        formatter: params => `${rows[params.dataIndex]?.capShortText || ""}`
+      },
+      markLine: {
+        symbol: "none",
+        lineStyle: { color: "#5c8d7b", type: "dashed" },
+        label: { formatter: "中美核心市场", color: "#5c8d7b", fontWeight: 700 },
+        data: [{ xAxis: round(maxCap / 1000000000000) }]
+      }
+    }]
   };
 }
 
@@ -1515,7 +1592,7 @@ function renderOverview(data, histories) {
       ${renderSectionHead("当前市场状态", "3 秒读懂当前适合进攻、防守，还是等待确认")}
       <div class="terminal-summary-layout">
         <div class="terminal-summary-score">
-          <span>市场温度</span>
+          <span>大盘温度</span>
           <strong>${safeText(data.heat.score ?? "--")}</strong>
           <em>${safeText(data.heat.label || "--")}</em>
         </div>
@@ -1523,6 +1600,23 @@ function renderOverview(data, histories) {
         <div class="terminal-summary-signals">
           ${data.signals.map(item => `<span><strong>${safeText(item.label)}</strong>${safeText(item.value)}</span>`).join("")}
         </div>
+      </div>
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+    </section>
+
+    <section class="section-block global-capacity-section">
+      ${renderSectionHead("全球十大市场市值容量", "市值容量决定长期配置权重：美国是全球权益资产核心，中国A股和港股是中国资产定价核心")}
+      <div class="global-capacity-layout">
+        <div class="global-capacity-summary">
+          <strong>${safeText(data.globalMarketSummary.title)}</strong>
+          <p>${safeText(data.globalMarketSummary.text)}</p>
+          <div>
+            ${data.globalMarketSummary.metrics.map(item => `
+              <span><em>${safeText(item.label)}</em>${safeText(item.value)}</span>
+            `).join("")}
+          </div>
+        </div>
+        <div class="echart global-capacity-chart" data-chart="global-market-capacity"></div>
       </div>
       ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
     </section>
@@ -1702,6 +1796,7 @@ function buildDemoOverview() {
       { id: "us", label: "美股", value: "科技拥挤" },
       { id: "hk", label: "港股", value: "修复观察" }
     ],
+    globalMarketCaps: demoGlobalMarketCaps,
     markets: demoIndexCards.map(item => normalizeDemoMarket(item))
   };
 }
@@ -1743,7 +1838,7 @@ function normalizeDemoMarket(item) {
 
 function renderTemperatureCard(item) {
   return `
-    <a class="temperature-card" href="#/history/${safeText(item.id)}" aria-label="查看${safeText(item.name)}十年详细图">
+      <a class="temperature-card" href="#/history/${safeText(item.id)}" aria-label="查看${safeText(item.name)}十年详细图">
       <header>
         <div>
           <h2>${safeText(item.name)}</h2>
@@ -1822,7 +1917,7 @@ function renderHistory(data) {
   const market = data.market || {};
   return `
     <article class="history-dashboard-card">
-      <a class="history-back-link" href="#/overview">返回市场温度</a>
+      <a class="history-back-link" href="#/overview">返回大盘概览</a>
       <h2 class="history-dashboard-title">${safeText(market.name)}：市值与营收是否匹配</h2>
       ${renderHistoryStatStrip(series)}
       <p class="chart-explain">主图只回答一个问题：企业基本面增长能否支撑指数总市值。PE 与巴菲特指标拆到下方单独判断估值和宏观泡沫。</p>
@@ -2010,6 +2105,11 @@ function normalizeMarketStyle(payload) {
 function normalizeOverview(payload) {
   const data = payload || {};
   const markets = Array.isArray(data.markets) ? data.markets : [];
+  const globalMarketCaps = normalizeGlobalMarketCaps(data.globalMarketCaps || demoGlobalMarketCaps);
+  const usCap = globalMarketCaps.find(item => item.name === "美国")?.cap || globalMarketCaps[0]?.cap || 1;
+  const chinaCap = globalMarketCaps
+    .filter(item => item.name === "中国A股" || item.name === "中国香港")
+    .reduce((sum, item) => sum + Number(item.cap || 0), 0);
   return {
     source: data.source || "service",
     usingDemo: data.source === "demo",
@@ -2017,6 +2117,16 @@ function normalizeOverview(payload) {
     updatedAtText: dateText(data.updatedAt),
     heat: data.heat || {},
     signals: Array.isArray(data.signals) ? data.signals : [],
+    globalMarketCaps,
+    globalMarketSummary: {
+      title: "为什么重点看中美市场",
+      text: "全球权益市值高度集中。美国决定全球风险偏好和科技资产估值，中国A股与港股决定中国资产的主定价区间，因此首页优先跟踪中美核心指数。",
+      metrics: [
+        { label: "美国市值", value: globalMarketCapText(usCap) },
+        { label: "A股+港股", value: globalMarketCapText(chinaCap) },
+        { label: "中国/美国", value: ratioLabel(usCap ? chinaCap / usCap * 100 : null) }
+      ]
+    },
     markets: markets.map(item => ({
       id: item.id,
       code: item.code,
@@ -2048,6 +2158,25 @@ function normalizeOverview(payload) {
     peBars: normalizePeBars(markets),
     marketCapSeries: normalizeCapSeries(data.marketCapSeries)
   };
+}
+
+function normalizeGlobalMarketCaps(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const normalized = list.map(item => ({
+    name: item.name || "--",
+    cap: Number(item.cap) || 0,
+    note: item.note || ""
+  })).filter(item => item.cap > 0);
+  const usCap = normalized.find(item => item.name === "美国")?.cap || Math.max(...normalized.map(item => item.cap), 1);
+  return normalized
+    .sort((a, b) => Number(b.cap) - Number(a.cap))
+    .slice(0, 10)
+    .map(item => ({
+      ...item,
+      capText: globalMarketCapText(item.cap),
+      capShortText: `${fixed(Number(item.cap) / 1000000000000, 1)}万亿`,
+      usRatioText: ratioLabel(usCap ? Number(item.cap) / usCap * 100 : null)
+    }));
 }
 
 function normalizeFundFlow(payload) {
@@ -2317,6 +2446,11 @@ function money(value, currency) {
   if (currency === "USD") return `${(num / 1000000000000).toFixed(1)}万亿美元`;
   if (currency === "HKD") return `${(num / 1000000000000).toFixed(1)}万亿港元`;
   return `${(num / 1000000000000).toFixed(1)}万亿元`;
+}
+
+function globalMarketCapText(value) {
+  const num = Number(value);
+  return Number.isFinite(num) ? `${(num / 1000000000000).toFixed(1)}万亿美元` : "--";
 }
 
 function flowMoney(value, currency) {

@@ -380,6 +380,59 @@ h3 {
   color: var(--text);
 }
 
+.global-capacity-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, .42fr) minmax(520px, 1fr);
+  align-items: stretch;
+  gap: 16px;
+}
+
+.global-capacity-summary {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  border-radius: 8px;
+  padding: 18px;
+  background: linear-gradient(135deg, #fff5df 0%, #f3e5ca 100%);
+}
+
+.global-capacity-summary strong {
+  font-size: 22px;
+}
+
+.global-capacity-summary p {
+  margin: 0;
+  color: #4c4438;
+}
+
+.global-capacity-summary div {
+  display: grid;
+  gap: 8px;
+}
+
+.global-capacity-summary span {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  background: rgb(255 250 241 / 78%);
+  font-weight: 850;
+}
+
+.global-capacity-summary em {
+  color: var(--muted);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.global-capacity-chart {
+  min-height: 390px;
+  border-radius: 8px;
+  background: #fff8ea;
+}
+
 .market-style-strip a {
   display: grid;
   grid-template-rows: auto auto auto;
@@ -1922,6 +1975,7 @@ h3 {
   .style-mainline-layout,
   .style-evidence-grid,
   .terminal-summary-layout,
+  .global-capacity-layout,
   .history-subchart-grid,
   .history-info-grid {
     grid-template-columns: 1fr;
