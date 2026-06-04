@@ -4,6 +4,7 @@ import * as echarts from "./vendor/echarts.esm.min.js";
 const routes = [
   { id: "overview", label: "大盘概览", endpoint: "/blogapi/market/overview" },
   { id: "market-style", label: "资金流向", endpoint: "/blogapi/market/style" },
+  { id: "crowding", label: "拥挤度", endpoint: "/blogapi/market/style" },
   { id: "value", label: "价值投资", endpoint: "/blogapi/market/value" }
 ];
 
@@ -612,6 +613,7 @@ function renderBody() {
   if (state.route.startsWith("history/")) return renderHistory(normalizeHistory(state.data));
   if (route.id === "overview") return renderOverview(normalizeOverview(state.data), state.histories);
   if (route.id === "market-style") return renderMarketStyle(normalizeMarketStyle(state.data));
+  if (route.id === "crowding") return renderCrowding(normalizeCrowding(extractCrowdingPayload(state.data)));
   if (route.id === "value") return renderValueInvesting(normalizeValueInvesting(state.data));
   return renderOverview(normalizeOverview(buildDemoOverview()), state.histories);
 }
@@ -652,15 +654,18 @@ function mountCharts() {
       const data = normalizeMarketStyle(state.data);
       mountChart("style-heatmap", styleHeatmapOption(data));
       mountChart("style-timeline", styleTimelineOption(data));
-      mountChart("industry-crowding", industryCrowdingOption(data.crowding));
       mountChart("flow-scale", flowScaleOption(data));
       mountChart("etf-ranking", etfRankingOption(data));
       mountChart("industry-flow", industryFlowOption(data));
       mountChart("style-flow", styleFlowOption(data));
-      mountChart("crowding-rank", crowdingRankOption(data.crowding));
-      mountChart("breadth", breadthOption(data.crowding));
-      mountChart("cluster", clusterOption(data.crowding));
-      mountChart("crowding-history", crowdingHistoryOption(data.crowding));
+    }
+    if (route.id === "crowding") {
+      const data = normalizeCrowding(extractCrowdingPayload(state.data));
+      mountChart("industry-crowding", industryCrowdingOption(data));
+      mountChart("crowding-rank", crowdingRankOption(data));
+      mountChart("breadth", breadthOption(data));
+      mountChart("cluster", clusterOption(data));
+      mountChart("crowding-history", crowdingHistoryOption(data));
     }
     if (route.id === "value") {
       const data = normalizeValueInvesting(state.data);
@@ -1219,7 +1224,7 @@ function styleFlowOption(data) {
           `<strong>${escapeHtml(item.name)}</strong>`,
           `净流入：${escapeHtml(item.amountText || "--")}`,
           `资金强度：${escapeHtml(item.strengthText || "--")}`,
-          `拥挤度：${escapeHtml(item.crowdingText || "--")}`,
+          `交易活跃度：${escapeHtml(item.crowdingText || "--")}`,
           `成交占比：${escapeHtml(item.shareText || "--")}`,
           `估值位置：${escapeHtml(item.valuationText || "--")}`,
           escapeHtml(item.risk || "")
@@ -1235,7 +1240,7 @@ function styleFlowOption(data) {
     },
     yAxis: {
       type: "value",
-      name: "交易拥挤度",
+      name: "交易活跃度",
       min: 0,
       max: 100,
       axisLabel: { formatter: "{value}%" },
@@ -1650,7 +1655,7 @@ function renderOverview(data, histories) {
 function renderMarketStyle(data) {
   return `
     <section class="section-block style-mainline-section">
-      ${renderSectionHead(`当前主线是${data.mainline.name}`, "先给结论，再看资金、拥挤和历史风格证据")}
+      ${renderSectionHead(`当前主线是${data.mainline.name}`, "先给结论，再看资金强度、成交占比和历史风格参照")}
       <div class="style-mainline-layout">
         <article class="style-mainline-card">
           <span>当前主线</span>
@@ -1661,7 +1666,7 @@ function renderMarketStyle(data) {
           <div><span>主线热度</span><strong>${safeText(data.mainline.scoreText)}</strong></div>
           <div><span>净流入</span><strong class="${data.mainline.netFlowClass}">${safeText(data.mainline.netFlowText)}</strong></div>
           <div><span>成交占比</span><strong>${safeText(data.mainline.turnoverShareText)}</strong></div>
-          <div><span>拥挤度</span><strong>${safeText(data.mainline.crowdingText)}</strong></div>
+          <div><span>净流入/成交</span><strong class="${data.marketNetClass}">${safeText(data.marketNetRatioText)}</strong></div>
         </div>
         <div class="style-mainline-reasons">
           ${data.mainline.reasons.map(reason => `<span>${safeText(reason)}</span>`).join("")}
@@ -1671,7 +1676,7 @@ function renderMarketStyle(data) {
     </section>
 
     <section class="section-block style-heatmap-section">
-      ${renderSectionHead("风格热力图", "10 大市场风格：资金强度、拥挤度、估值位置、市场广度综合观察")}
+      ${renderSectionHead("风格热力图", "10 大市场风格：用颜色看资金强度，hover 查看估值、广度和拥挤信息")}
       <div class="echart style-heatmap-chart" data-chart="style-heatmap"></div>
       <div class="style-catalog-grid">
         ${data.styles.map(item => `
@@ -1698,7 +1703,7 @@ function renderMarketStyle(data) {
     </section>
 
     <section class="section-block style-evidence-section">
-      ${renderSectionHead("钱在交易什么，这个方向是否拥挤", "把资金流向和拥挤度放在一起看：先看资金强度，再判断是否已经过热")}
+      ${renderSectionHead("钱在交易什么", "先看今日资金盘子，再看 ETF、行业和 10 大风格的相对流向")}
       <div class="style-evidence-grid">
         <article class="panel module-card wide flow-context-mini">
           <div class="section-head"><h2>资金盘子与净流向</h2><span>净流入 / 今日成交额</span></div>
@@ -1727,15 +1732,25 @@ function renderMarketStyle(data) {
           ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
         </article>
         <article class="panel module-card wide">
-          <div class="section-head"><h2>10大风格流向</h2><span>横轴资金偏好，纵轴交易拥挤度，气泡大小表示成交占比</span></div>
+          <div class="section-head"><h2>10大风格流向</h2><span>横轴资金偏好，纵轴交易活跃度，气泡大小表示成交占比</span></div>
           <div class="chart-legend-note">
             <span>越靠右：资金越偏好</span>
-            <span>越靠上：交易越拥挤</span>
+            <span>越靠上：交易越活跃</span>
             <span>气泡越大：成交占比越高</span>
           </div>
           <div class="echart style-flow-chart" data-chart="style-flow"></div>
           ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
         </article>
+      </div>
+    </section>
+  `;
+}
+
+function renderCrowding(data) {
+  return `
+    <section class="section-block style-evidence-section">
+      ${renderSectionHead("拥挤度", "单独观察市场是否已经过热：行业市值、拥挤排行、市场广度、基金抱团和历史位置")}
+      <div class="style-evidence-grid">
         <article class="panel module-card wide">
           <div class="section-head"><h2>行业规模与拥挤度</h2><span>行业市值 / 拥挤分位</span></div>
           <div class="echart industry-crowding-chart" data-chart="industry-crowding"></div>
@@ -1750,21 +1765,21 @@ function renderMarketStyle(data) {
           <div class="section-head"><h2>市场广度</h2><span>上涨 / 下跌家数</span></div>
           <div class="echart breadth-chart" data-chart="breadth"></div>
           <div class="breadth-counts">
-            <span>上涨 <strong class="positive">${safeText(data.crowding.breadth.upText)}</strong></span>
-            <span>下跌 <strong class="negative">${safeText(data.crowding.breadth.downText)}</strong></span>
-            <span>指数 <strong class="${data.crowding.breadth.indexClass}">${safeText(data.crowding.breadth.indexText)}</strong></span>
+            <span>上涨 <strong class="positive">${safeText(data.breadth.upText)}</strong></span>
+            <span>下跌 <strong class="negative">${safeText(data.breadth.downText)}</strong></span>
+            <span>指数 <strong class="${data.breadth.indexClass}">${safeText(data.breadth.indexText)}</strong></span>
           </div>
-          <p>${safeText(data.crowding.breadth.note)}</p>
+          <p>${safeText(data.breadth.note)}</p>
           ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
         </article>
         <article class="panel module-card">
           <div class="section-head"><h2>基金抱团</h2><span>重仓股 / 行业集中度</span></div>
           <div class="cluster-score">
-            <strong>${safeText(data.crowding.fundCluster.concentrationText)}</strong>
+            <strong>${safeText(data.fundCluster.concentrationText)}</strong>
             <span>Top5行业集中度，处于历史高位</span>
           </div>
           <div class="tag-row cluster-tags">
-            ${data.crowding.fundCluster.topStocks.map(name => `<span>${safeText(name)}</span>`).join("")}
+            ${data.fundCluster.topStocks.map(name => `<span>${safeText(name)}</span>`).join("")}
           </div>
           <div class="echart cluster-chart" data-chart="cluster"></div>
           ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
@@ -1802,8 +1817,21 @@ function buildDemoOverview() {
 
 function buildDemoPage(id) {
   if (id === "market-style") return demoMarketStyle;
+  if (id === "crowding") return demoCrowding;
   if (id === "value") return demoValueInvesting;
   return buildDemoOverview();
+}
+
+function extractCrowdingPayload(payload) {
+  if (payload?.crowding) {
+    return {
+      ...payload.crowding,
+      source: payload.source,
+      updatedAt: payload.updatedAt,
+      demoReason: payload.demoReason
+    };
+  }
+  return payload;
 }
 
 function normalizeDemoMarket(item) {
