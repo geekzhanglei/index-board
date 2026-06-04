@@ -237,6 +237,13 @@ h3 {
   background: #f2e6d0;
 }
 
+.section-updated span[title] {
+  cursor: help;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+
 .echart {
   width: 100%;
   min-height: 260px;

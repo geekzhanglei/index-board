@@ -1563,14 +1563,39 @@ function renderSectionHead(title, note = "") {
   `;
 }
 
-function renderSectionUpdated(updatedAtText, usingDemo = false) {
+function renderSectionUpdated(updatedAtText, usingDemo = false, logic = "") {
+  const logicTitle = logic ? ` title="${escapeAttr(logic)}"` : "";
   return `
     <footer class="section-updated">
       ${usingDemo ? "<span>演示数据</span>" : ""}
-      <span>更新 ${safeText(updatedAtText)}</span>
+      <span${logicTitle}>更新 ${safeText(updatedAtText)}</span>
     </footer>
   `;
 }
+
+const calcLogic = {
+  marketTemperature: "大盘温度 = 主要指数PE历史分位均值；流动性信号 = 指数当前市值相对区间首月市值的扩张/收缩；缺失PE时用近一年收盘价分位估算估值温度。",
+  globalCapacity: "全球市场容量取 World Bank 上市公司总市值 CM.MKT.LCAP.CD，各国家取最新非空年份；中美对比使用美国、中国A股、中国香港的美元市值口径。",
+  indexStyle: "主要指数风格来自固定指数定义；点位和涨跌幅优先取公开行情快照，快照缺失时用历史月线最新收盘兜底。",
+  indexCards: "指数温度卡片展示点位、涨跌幅、PE、PE分位和总市值；PE分位基于历史区间排序，越高代表越热。",
+  mainline: "当前主线 = 10大风格中综合热度最高者；综合热度由资金强度、成交占比和拥挤程度合成。",
+  styleHeatmap: "风格热力图颜色表示资金强度；hover展示风格市值、净流入、拥挤度、估值位置和市场广度。",
+  styleTimeline: "历史风格轮动为人工定义的长期主线参考，用来辅助判断当前资金方向是否处在历史相似阶段。",
+  flowScale: "资金盘子 = 全市场成交额；主线净流入 = 10大风格净流入合计；净流入/成交额用于判断绝对资金量是否有意义。",
+  etfFlow: "ETF资金流向基于公开ETF行情成交额和涨跌方向估算，近20日趋势用于判断是否持续配置。",
+  industryFlow: "行业资金流按31个行业聚合，面积代表行业市值，颜色代表当日净流入/流出强度。",
+  styleFlow: "10大风格流向横轴为净流入，纵轴为交易活跃度，气泡大小为成交占比。",
+  industryCrowding: "行业规模与拥挤度 = 行业总市值、成交占比、资金流和估值位置综合，用来识别大行业是否过热。",
+  crowdingRank: "拥挤度排行榜按成交占比、资金流强度和估值分位排序，分数越高代表越容易出现回撤或风格切换。",
+  breadth: "市场广度统计全A上涨、下跌和平盘家数；若指数上涨但多数股票下跌，说明权重抱团明显。",
+  fundCluster: "基金抱团用头部行业市值占比和Top重仓股集中度近似，集中度越高代表交易越拥挤。",
+  crowdingHistory: "拥挤历史记录主线交易拥挤度，80%以上偏泡沫，50%-80%为热门期，50%以下代表集中度不高。",
+  valueStocks: "价值投资候选股固定为A股大蓝筹；股息率趋势来自公开分红数据与当前价格计算，持有热度由股息率分位、PE、派息率和风险标记合成。",
+  historyMain: "指数详情主图使用10年月度历史：柱状为估算总营收，红线为估算市值，紫线为PE，绿线为巴菲特指标；历史点位来自公开月线接口。",
+  historyPe: "PE估值分位 = 当前月PE在10年历史PE序列中的排序位置，分位越高估值越贵。",
+  historyBuffett: "巴菲特指标 = A股/指数估算总市值与GDP或基准容量的相对位置，用来观察宏观估值水位。",
+  historyGrowth: "增长对比 = 营收同比增速与市值同比增速；市值涨得快于营收时，估值扩张贡献更大。"
+};
 
 async function loadOverviewHistories(payload) {
   const markets = Array.isArray(payload?.markets) ? payload.markets : [];
@@ -1605,7 +1630,7 @@ function renderOverview(data, histories) {
           ${data.signals.map(item => `<span><strong>${safeText(item.label)}</strong>${safeText(item.value)}</span>`).join("")}
         </div>
       </div>
-      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.marketTemperature)}
     </section>
 
     <section class="section-block global-capacity-section">
@@ -1622,7 +1647,7 @@ function renderOverview(data, histories) {
         </div>
         <div class="echart global-capacity-chart" data-chart="global-market-capacity"></div>
       </div>
-      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.globalCapacity)}
     </section>
 
     <section class="section-block overview-strip-section">
@@ -1639,7 +1664,7 @@ function renderOverview(data, histories) {
           </a>
         `).join("")}
       </div>
-      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.indexStyle)}
     </section>
 
     <section class="section-block overview-card-section">
@@ -1647,7 +1672,7 @@ function renderOverview(data, histories) {
       <div class="temperature-card-grid">
         ${data.markets.map(renderTemperatureCard).join("")}
       </div>
-      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.indexCards)}
     </section>
   `;
 }
@@ -1672,7 +1697,7 @@ function renderMarketStyle(data) {
           ${data.mainline.reasons.map(reason => `<span>${safeText(reason)}</span>`).join("")}
         </div>
       </div>
-      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.mainline)}
     </section>
 
     <section class="section-block style-heatmap-section">
@@ -1693,13 +1718,13 @@ function renderMarketStyle(data) {
           </article>
         `).join("")}
       </div>
-      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.styleHeatmap)}
     </section>
 
     <section class="section-block style-timeline-section">
       ${renderSectionHead("历史风格轮动时间轴", "用历史主线作为参照，避免把短期交易误判成长期风格")}
       <div class="echart style-timeline-chart" data-chart="style-timeline"></div>
-      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.styleTimeline)}
     </section>
 
     <section class="section-block style-evidence-section">
@@ -1718,18 +1743,18 @@ function renderMarketStyle(data) {
             </div>
             <div class="echart flow-scale-chart" data-chart="flow-scale"></div>
           </div>
-          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.flowScale)}
         </article>
         <article class="panel module-card">
           <div class="section-head"><h2>ETF资金流向排行榜</h2><span>净申赎与成交额占比</span></div>
           <div class="echart etf-ranking-chart" data-chart="etf-ranking"></div>
           <p class="chart-explain">单日净流入要和成交额一起看；近20日累计趋势用于判断是不是持续配置，而不是一天的噪音。</p>
-          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.etfFlow)}
         </article>
         <article class="panel module-card">
           <div class="section-head"><h2>行业资金流</h2><span>31个行业，面积按市值，颜色按流入流出</span></div>
           <div class="echart industry-flow-chart" data-chart="industry-flow"></div>
-          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.industryFlow)}
         </article>
         <article class="panel module-card wide">
           <div class="section-head"><h2>10大风格流向</h2><span>横轴资金偏好，纵轴交易活跃度，气泡大小表示成交占比</span></div>
@@ -1739,7 +1764,7 @@ function renderMarketStyle(data) {
             <span>气泡越大：成交占比越高</span>
           </div>
           <div class="echart style-flow-chart" data-chart="style-flow"></div>
-          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.styleFlow)}
         </article>
       </div>
     </section>
@@ -1754,12 +1779,12 @@ function renderCrowding(data) {
         <article class="panel module-card wide">
           <div class="section-head"><h2>行业规模与拥挤度</h2><span>行业市值 / 拥挤分位</span></div>
           <div class="echart industry-crowding-chart" data-chart="industry-crowding"></div>
-          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.industryCrowding)}
         </article>
         <article class="panel module-card">
           <div class="section-head"><h2>拥挤度排行榜</h2><span>成交、估值和资金热度</span></div>
           <div class="echart crowding-rank-chart" data-chart="crowding-rank"></div>
-          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.crowdingRank)}
         </article>
         <article class="panel module-card breadth-card">
           <div class="section-head"><h2>市场广度</h2><span>上涨 / 下跌家数</span></div>
@@ -1770,7 +1795,7 @@ function renderCrowding(data) {
             <span>指数 <strong class="${data.breadth.indexClass}">${safeText(data.breadth.indexText)}</strong></span>
           </div>
           <p>${safeText(data.breadth.note)}</p>
-          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.breadth)}
         </article>
         <article class="panel module-card">
           <div class="section-head"><h2>基金抱团</h2><span>重仓股 / 行业集中度</span></div>
@@ -1782,13 +1807,13 @@ function renderCrowding(data) {
             ${data.fundCluster.topStocks.map(name => `<span>${safeText(name)}</span>`).join("")}
           </div>
           <div class="echart cluster-chart" data-chart="cluster"></div>
-          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.fundCluster)}
         </article>
         <article class="panel module-card wide">
           <div class="section-head"><h2>拥挤历史</h2><span>主线交易拥挤度，越高代表越容易出现回撤或风格切换</span></div>
           <p class="chart-explain">拥挤度 = 成交占比 + 资金流入占比 + 基金集中度。80% 以上接近泡沫期，50%-80% 是热门期，50% 以下说明交易还没有明显集中。</p>
           <div class="echart crowding-history-chart" data-chart="crowding-history"></div>
-          ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.crowdingHistory)}
         </article>
       </div>
     </section>
@@ -1901,7 +1926,7 @@ function renderValueInvesting(data) {
     <section class="section-block value-intro-section">
       ${renderSectionHead("大蓝筹股息观察", "固定观察 A 股股息票，先看股息率，再看派息率、增发风险和重大利空")}
       <article class="summary-card">${safeText(data.summary)}</article>
-      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.valueStocks)}
     </section>
     <section class="section-block value-list-section">
       <div class="value-stock-grid">
@@ -1928,7 +1953,7 @@ function renderValueInvesting(data) {
           </a>
         `).join("")}
       </div>
-      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.valueStocks)}
     </section>
   `;
 }
@@ -1951,26 +1976,26 @@ function renderHistory(data) {
       <div class="chart-wrap history-main-wrap">
         <div class="echart history-main-chart" data-chart="history-main"></div>
       </div>
-      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.historyMain)}
     </article>
     <section class="history-subchart-grid">
       <article class="history-dashboard-card">
         <h2 class="subchart-title">PE + PE估值分位</h2>
         <p class="chart-explain">回答“现在贵不贵”：分位越低越偏冷，分位越高越接近泡沫。</p>
         <div class="echart history-subchart" data-chart="pe-valuation"></div>
-        ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+        ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.historyPe)}
       </article>
       <article class="history-dashboard-card">
         <h2 class="subchart-title">巴菲特指标</h2>
         <p class="chart-explain">回答“市场整体是否泡沫”：它是宏观估值，不和指数自身指标堆在同一张主图。</p>
         <div class="echart history-subchart" data-chart="buffett-indicator"></div>
-        ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+        ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.historyBuffett)}
       </article>
       <article class="history-dashboard-card">
         <h2 class="subchart-title">营收增速（TTM）与市值增速（TTM）</h2>
         <p class="chart-explain">如果市值增速长期高于营收增速，通常说明估值正在扩张。</p>
         <div class="echart history-subchart" data-chart="growth-compare"></div>
-        ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+        ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.historyGrowth)}
       </article>
     </section>
     <section class="history-info-grid">
