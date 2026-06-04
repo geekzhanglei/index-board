@@ -172,12 +172,12 @@ const demoFundFlow = {
   },
   marketNetFlow: 38600000000,
   etfRanking: [
-    { name: "沪深300ETF", amount: 42.6, theme: "大盘核心" },
-    { name: "中证A500ETF", amount: 31.2, theme: "宽基增配" },
-    { name: "科创50ETF", amount: 18.7, theme: "硬科技" },
-    { name: "红利低波ETF", amount: 12.4, theme: "防守票息" },
-    { name: "科创100ETF", amount: -9.6, theme: "成长流出" },
-    { name: "医药ETF", amount: -14.8, theme: "估值修复慢" }
+    { name: "沪深300ETF", amount: 42.6, theme: "大盘核心", turnover: 1040, trend: [-8, -5, 2, 7, 16, 24, 29, 41, 52, 66, 88, 103, 122, 149, 173, 198, 221, 246, 277, 319] },
+    { name: "中证A500ETF", amount: 31.2, theme: "宽基增配", turnover: 820, trend: [-3, 4, 12, 21, 35, 46, 63, 78, 91, 110, 132, 151, 176, 201, 224, 249, 271, 291, 318, 349] },
+    { name: "科创50ETF", amount: 18.7, theme: "硬科技", turnover: 460, trend: [-42, -38, -31, -21, -15, -9, 4, 16, 27, 33, 47, 59, 74, 86, 98, 112, 127, 141, 158, 177] },
+    { name: "红利低波ETF", amount: 12.4, theme: "防守票息", turnover: 310, trend: [18, 25, 33, 41, 49, 58, 66, 74, 83, 91, 102, 116, 129, 143, 158, 172, 184, 196, 207, 219] },
+    { name: "科创100ETF", amount: -9.6, theme: "成长流出", turnover: 260, trend: [81, 76, 69, 64, 58, 54, 49, 43, 39, 35, 29, 22, 18, 12, 7, 2, -3, -7, -12, -22] },
+    { name: "医药ETF", amount: -14.8, theme: "估值修复慢", turnover: 295, trend: [44, 38, 31, 27, 19, 12, 7, -1, -8, -17, -22, -29, -37, -45, -56, -62, -73, -82, -94, -109] }
   ],
   industryMatrix: demoIndustryFundFlows,
   northbound: {
@@ -222,11 +222,33 @@ const demoCrowding = {
     down: 4218,
     flat: 116,
     indexChange: 0.72,
-    note: "指数收红但全市场约 79% 个股下跌，权重抱团信号明显。"
+    note: "指数收红但全市场约 79% 个股下跌，权重抱团信号明显。",
+    history: [
+      { date: "05-17", advanceDecline: -420 },
+      { date: "05-20", advanceDecline: 180 },
+      { date: "05-21", advanceDecline: -860 },
+      { date: "05-22", advanceDecline: -1120 },
+      { date: "05-23", advanceDecline: -640 },
+      { date: "05-24", advanceDecline: 260 },
+      { date: "05-27", advanceDecline: -1580 },
+      { date: "05-28", advanceDecline: -2090 },
+      { date: "05-29", advanceDecline: -2440 },
+      { date: "05-30", advanceDecline: -3192 }
+    ]
   },
   fundCluster: {
     concentration: 64,
     topStocks: ["宁德时代", "贵州茅台", "腾讯控股", "中际旭创", "招商银行"],
+    concentrationTrend: [
+      { date: "2022Q1", value: 42 },
+      { date: "2022Q3", value: 46 },
+      { date: "2023Q1", value: 49 },
+      { date: "2023Q3", value: 53 },
+      { date: "2024Q1", value: 58 },
+      { date: "2024Q3", value: 61 },
+      { date: "2025Q1", value: 63 },
+      { date: "2025Q3", value: 64 }
+    ],
     industries: [
       { name: "电子", weight: 18.6 },
       { name: "银行", weight: 15.4 },
@@ -439,18 +461,18 @@ const demoValueInvesting = {
   updatedAt: "2026-06-03T01:00:00+08:00",
   summary: "初版固定观察 12 只 A 股大蓝筹股息票，重点看股息率、分红稳定性、增发风险和重大利空。",
   stocks: [
-    { code: "601398.SH", name: "工商银行", dividendYield: 5.8, payout: 31, pe: 5.1, issueRisk: "低", badNews: "无重大未消化利空", trend: [4.4, 4.8, 5.1, 5.5, 5.8] },
-    { code: "601288.SH", name: "农业银行", dividendYield: 5.4, payout: 32, pe: 5.4, issueRisk: "低", badNews: "息差压力", trend: [4.1, 4.6, 4.9, 5.2, 5.4] },
-    { code: "600028.SH", name: "中国石化", dividendYield: 6.1, payout: 58, pe: 8.8, issueRisk: "中", badNews: "油价波动", trend: [5.0, 5.4, 5.9, 5.7, 6.1] },
-    { code: "601088.SH", name: "中国神华", dividendYield: 6.7, payout: 71, pe: 9.2, issueRisk: "低", badNews: "煤价下行", trend: [6.2, 7.1, 7.4, 6.9, 6.7] },
-    { code: "600900.SH", name: "长江电力", dividendYield: 3.4, payout: 69, pe: 21.4, issueRisk: "低", badNews: "估值偏贵", trend: [3.8, 3.6, 3.5, 3.4, 3.4] },
-    { code: "600519.SH", name: "贵州茅台", dividendYield: 2.9, payout: 52, pe: 22.6, issueRisk: "低", badNews: "批价压力", trend: [1.6, 1.9, 2.2, 2.5, 2.9] },
-    { code: "000651.SZ", name: "格力电器", dividendYield: 7.2, payout: 68, pe: 7.5, issueRisk: "低", badNews: "增长放缓", trend: [5.8, 6.1, 6.7, 7.0, 7.2] },
-    { code: "600887.SH", name: "伊利股份", dividendYield: 4.6, payout: 63, pe: 13.2, issueRisk: "低", badNews: "需求偏弱", trend: [2.9, 3.4, 4.0, 4.3, 4.6] },
-    { code: "601318.SH", name: "中国平安", dividendYield: 5.2, payout: 39, pe: 7.9, issueRisk: "中", badNews: "地产资产质量", trend: [3.1, 4.0, 4.7, 5.0, 5.2] },
-    { code: "600036.SH", name: "招商银行", dividendYield: 5.0, payout: 35, pe: 6.2, issueRisk: "低", badNews: "净息差承压", trend: [3.3, 3.8, 4.4, 4.8, 5.0] },
-    { code: "601668.SH", name: "中国建筑", dividendYield: 4.8, payout: 22, pe: 4.6, issueRisk: "中", badNews: "地产链拖累", trend: [4.1, 4.3, 4.6, 4.9, 4.8] },
-    { code: "601857.SH", name: "中国石油", dividendYield: 4.9, payout: 48, pe: 9.7, issueRisk: "中", badNews: "油气价格波动", trend: [4.2, 4.7, 5.1, 5.0, 4.9] }
+    { code: "601398.SH", name: "工商银行", dividendYield: 5.8, payout: 31, pe: 5.1, issueRisk: "低", badNews: "无重大未消化利空", trend: [3.7, 3.8, 4.1, 4.2, 4.4, 4.8, 5.1, 5.5, 5.6, 5.8] },
+    { code: "601288.SH", name: "农业银行", dividendYield: 5.4, payout: 32, pe: 5.4, issueRisk: "低", badNews: "息差压力", trend: [3.4, 3.5, 3.8, 4.0, 4.1, 4.6, 4.9, 5.2, 5.3, 5.4] },
+    { code: "600028.SH", name: "中国石化", dividendYield: 6.1, payout: 58, pe: 8.8, issueRisk: "中", badNews: "油价波动", trend: [4.3, 4.6, 4.8, 4.9, 5.0, 5.4, 5.9, 5.7, 5.8, 6.1] },
+    { code: "601088.SH", name: "中国神华", dividendYield: 6.7, payout: 71, pe: 9.2, issueRisk: "低", badNews: "煤价下行", trend: [5.2, 5.6, 5.9, 6.0, 6.2, 7.1, 7.4, 6.9, 6.8, 6.7] },
+    { code: "600900.SH", name: "长江电力", dividendYield: 3.4, payout: 69, pe: 21.4, issueRisk: "低", badNews: "估值偏贵", trend: [4.2, 4.1, 4.0, 3.9, 3.8, 3.6, 3.5, 3.4, 3.4, 3.4] },
+    { code: "600519.SH", name: "贵州茅台", dividendYield: 2.9, payout: 52, pe: 22.6, issueRisk: "低", badNews: "批价压力", trend: [1.1, 1.2, 1.4, 1.5, 1.6, 1.9, 2.2, 2.5, 2.7, 2.9] },
+    { code: "000651.SZ", name: "格力电器", dividendYield: 7.2, payout: 68, pe: 7.5, issueRisk: "低", badNews: "增长放缓", trend: [4.9, 5.1, 5.4, 5.6, 5.8, 6.1, 6.7, 7.0, 7.1, 7.2] },
+    { code: "600887.SH", name: "伊利股份", dividendYield: 4.6, payout: 63, pe: 13.2, issueRisk: "低", badNews: "需求偏弱", trend: [2.2, 2.4, 2.6, 2.8, 2.9, 3.4, 4.0, 4.3, 4.5, 4.6] },
+    { code: "601318.SH", name: "中国平安", dividendYield: 5.2, payout: 39, pe: 7.9, issueRisk: "中", badNews: "地产资产质量", trend: [2.5, 2.7, 2.9, 3.0, 3.1, 4.0, 4.7, 5.0, 5.1, 5.2] },
+    { code: "600036.SH", name: "招商银行", dividendYield: 5.0, payout: 35, pe: 6.2, issueRisk: "低", badNews: "净息差承压", trend: [2.8, 2.9, 3.1, 3.2, 3.3, 3.8, 4.4, 4.8, 4.9, 5.0] },
+    { code: "601668.SH", name: "中国建筑", dividendYield: 4.8, payout: 22, pe: 4.6, issueRisk: "中", badNews: "地产链拖累", trend: [3.6, 3.7, 3.9, 4.0, 4.1, 4.3, 4.6, 4.9, 4.9, 4.8] },
+    { code: "601857.SH", name: "中国石油", dividendYield: 4.9, payout: 48, pe: 9.7, issueRisk: "中", badNews: "油气价格波动", trend: [3.7, 3.8, 4.0, 4.1, 4.2, 4.7, 5.1, 5.0, 4.8, 4.9] }
   ]
 };
 
@@ -605,7 +627,8 @@ function mountCharts() {
     const data = normalizeHistory(state.data);
     const series = buildHistorySeries(data.points);
     mountChart("history-main", historyMainOption(series, data.market));
-    mountChart("pe-percentile", pePercentileOption(series));
+    mountChart("pe-valuation", peValuationOption(series));
+    mountChart("buffett-indicator", buffettIndicatorOption(series));
     mountChart("growth-compare", growthCompareOption(series));
   } else {
     const route = currentRoute();
@@ -673,7 +696,7 @@ function historyMainOption(series, market) {
   const dates = list.map(item => item.date);
   const latestName = safeText(market?.name || "指数");
   return {
-    color: ["#7db2f2", "#ff2f22", "#7c35e8", "#129846"],
+    color: ["#7db2f2", "#c86b5a"],
     animationDuration: 550,
     tooltip: {
       trigger: "axis",
@@ -681,11 +704,11 @@ function historyMainOption(series, market) {
       valueFormatter: value => Number.isFinite(Number(value)) ? Number(value).toFixed(2) : value
     },
     legend: {
-      top: 4,
+      top: 8,
       itemGap: 28,
-      data: ["总营收（TTM）", "总市值", "PE（TTM）", "巴菲特指标"]
+      data: ["总营收（TTM）", "总市值"]
     },
-    grid: chartBaseGrid({ top: 88, right: 118, left: 118, bottom: 50 }),
+    grid: chartBaseGrid({ top: 70, right: 42, left: 70, bottom: 50 }),
     xAxis: {
       type: "category",
       boundaryGap: true,
@@ -697,44 +720,21 @@ function historyMainOption(series, market) {
       {
         type: "value",
         name: "市值（万亿）",
+        position: "right",
         nameLocation: "end",
         nameGap: 22,
-        nameTextStyle: { color: "#ff2f22", fontWeight: 700 },
-        axisLabel: { color: "#ff2f22" },
+        nameTextStyle: { color: "#c86b5a", fontWeight: 700 },
+        axisLabel: { color: "#c86b5a" },
         splitLine: { lineStyle: { color: "#e8e1d6", type: "dashed" } }
       },
       {
         type: "value",
         name: "营收（万亿）",
         position: "left",
-        offset: 56,
         nameLocation: "end",
         nameGap: 22,
         nameTextStyle: { color: "#2f74d0", fontWeight: 700 },
         axisLabel: { color: "#2f74d0" },
-        splitLine: { show: false }
-      },
-      {
-        type: "value",
-        name: "PE（倍）",
-        position: "right",
-        nameLocation: "end",
-        nameGap: 22,
-        nameTextStyle: { color: "#7c35e8", fontWeight: 700 },
-        axisLabel: { color: "#7c35e8" },
-        splitLine: { show: false }
-      },
-      {
-        type: "value",
-        name: "巴菲特（%）",
-        position: "right",
-        offset: 56,
-        nameLocation: "end",
-        nameGap: 22,
-        min: 0,
-        max: 120,
-        nameTextStyle: { color: "#129846", fontWeight: 700 },
-        axisLabel: { color: "#129846", formatter: "{value}%" },
         splitLine: { show: false }
       }
     ],
@@ -767,56 +767,91 @@ function historyMainOption(series, market) {
         data: list.map(item => chartNumber(item.marketCapT)),
         smooth: .12,
         showSymbol: false,
-        lineStyle: { width: 2.2, color: "#ff2f22" }
-      },
-      {
-        name: "PE（TTM）",
-        type: "line",
-        yAxisIndex: 2,
-        data: list.map(item => chartNumber(item.pe)),
-        smooth: .16,
-        showSymbol: false,
-        lineStyle: { width: 2, color: "#7c35e8" }
-      },
-      {
-        name: "巴菲特指标",
-        type: "line",
-        yAxisIndex: 3,
-        data: list.map(item => chartNumber(item.buffett)),
-        smooth: .12,
-        showSymbol: false,
-        lineStyle: { width: 2.1, color: "#129846" }
+        lineStyle: { width: 2.4, color: "#c86b5a" }
       }
     ],
-    aria: { enabled: true, label: { description: `${latestName}十年市值营收PE趋势图` } }
+    aria: { enabled: true, label: { description: `${latestName}十年市值和营收趋势图` } }
   };
 }
 
-function pePercentileOption(series) {
+function peValuationOption(series) {
   const list = series.filter(item => Number.isFinite(item.pePercentile));
+  const latest = list[list.length - 1] || {};
+  const status = valuationStatus(latest.pePercentile);
   return {
-    color: ["#1f6ff2"],
-    tooltip: { trigger: "axis", valueFormatter: value => `${Number(value).toFixed(1)}%` },
-    grid: chartBaseGrid({ top: 24, right: 20 }),
+    color: ["#7c55d9", "#235d82"],
+    tooltip: { trigger: "axis" },
+    legend: { top: 4, data: ["PE（TTM）", "PE历史分位"] },
+    graphic: [{
+      type: "text",
+      right: 22,
+      top: 34,
+      style: {
+        text: `当前：${status.label} · 历史${fixed(latest.pePercentile, 1)}%`,
+        fill: status.color,
+        font: "700 13px sans-serif"
+      }
+    }],
+    grid: chartBaseGrid({ top: 58, right: 54, left: 42 }),
     xAxis: { type: "category", data: list.map(item => item.date), axisLabel: { interval: 11 } },
-    yAxis: { type: "value", min: 0, max: 100, axisLabel: { formatter: "{value}%" }, splitLine: { lineStyle: { color: "#ece3d5", type: "dashed" } } },
+    yAxis: [
+      { type: "value", name: "PE", min: 0, splitLine: { lineStyle: { color: "#ece3d5", type: "dashed" } } },
+      { type: "value", name: "分位", min: 0, max: 100, axisLabel: { formatter: "{value}%" }, splitLine: { show: false } }
+    ],
+    series: [
+      {
+        name: "PE（TTM）",
+        type: "line",
+        data: list.map(item => chartNumber(item.pe)),
+        smooth: .18,
+        showSymbol: false,
+        lineStyle: { width: 2.2 }
+      },
+      {
+        name: "PE历史分位",
+        type: "line",
+        yAxisIndex: 1,
+        data: list.map(item => chartNumber(item.pePercentile)),
+        smooth: .18,
+        showSymbol: false,
+        areaStyle: { color: "rgba(35, 93, 130, .1)" },
+        lineStyle: { width: 2.2 },
+        markArea: {
+          silent: true,
+          label: { color: "#5f554a" },
+          data: [
+            [{ yAxis: 80, name: "泡沫" }, { yAxis: 100 }],
+            [{ yAxis: 50, name: "偏贵" }, { yAxis: 80 }],
+            [{ yAxis: 20, name: "合理" }, { yAxis: 50 }],
+            [{ yAxis: 0, name: "低估" }, { yAxis: 20 }]
+          ],
+          itemStyle: { color: "rgba(200, 107, 90, .07)" }
+        }
+      }
+    ]
+  };
+}
+
+function buffettIndicatorOption(series) {
+  const list = series.filter(item => Number.isFinite(item.buffett));
+  return {
+    color: ["#5c8d7b"],
+    tooltip: { trigger: "axis", valueFormatter: value => `${Number(value).toFixed(1)}%` },
+    grid: chartBaseGrid({ top: 28, right: 24, left: 48 }),
+    xAxis: { type: "category", data: list.map(item => item.date), axisLabel: { interval: 11 } },
+    yAxis: { type: "value", min: 0, max: 120, axisLabel: { formatter: "{value}%" }, splitLine: { lineStyle: { color: "#ece3d5", type: "dashed" } } },
     series: [{
-      name: "PE分位",
+      name: "巴菲特指标",
       type: "line",
-      data: list.map(item => chartNumber(item.pePercentile)),
+      data: list.map(item => chartNumber(item.buffett)),
       smooth: .18,
       showSymbol: false,
-      lineStyle: { width: 2.2 },
+      lineStyle: { width: 2.4 },
+      areaStyle: { color: "rgba(92, 141, 123, .1)" },
       markLine: {
         symbol: "none",
-        label: { position: "insideStartTop" },
-        lineStyle: { type: "dashed", width: 1.2 },
-        data: [
-          { yAxis: 80, name: "极度高估区（>80%）", lineStyle: { color: "#ff4d43" } },
-          { yAxis: 60, name: "高估区（50%-80%）", lineStyle: { color: "#f0a22a" } },
-          { yAxis: 40, name: "合理区（20%-50%）", lineStyle: { color: "#18a567" } },
-          { yAxis: 20, name: "低估区（<20%）", lineStyle: { color: "#24a9d8" } }
-        ]
+        lineStyle: { type: "dashed", color: "#c8a464" },
+        data: [{ yAxis: 80, name: "偏热参考" }, { yAxis: 100, name: "泡沫参考" }]
       }
     }]
   };
@@ -876,7 +911,7 @@ function styleHeatmapOption(data) {
         show: true,
         color: "#202020",
         fontWeight: 850,
-        formatter: params => `${params.data.name}\n资金强度 ${params.data.flowText}\n${params.data.netFlowText}`
+        formatter: params => `${params.data.name}\n${params.data.netFlowText}`
       },
       upperLabel: { show: false },
       levels: [
@@ -1006,27 +1041,58 @@ function flowScaleOption(data) {
 
 function etfRankingOption(data) {
   const rows = [...(data.etfRanking || [])].reverse();
+  const trendRows = [...(data.etfRanking || [])].filter(item => Array.isArray(item.trend) && item.trend.length);
+  const trendLength = Math.max(...trendRows.map(item => item.trend.length), 0);
+  const trend = Array.from({ length: trendLength }, (_, index) => trendRows.reduce((sum, item) => sum + (Number(item.trend[index]) || 0), 0));
   return {
     tooltip: {
       trigger: "axis",
       axisPointer: { type: "shadow" },
       formatter: params => {
-        const row = rows[params[0]?.dataIndex] || {};
-        return `${escapeHtml(row.name)}<br>${escapeHtml(row.theme)}<br>净流入 ${escapeHtml(row.amountText)}<br>占成交 ${escapeHtml(row.shareText)}`;
+        const barParam = params.find(item => item.seriesName === "当日净流入");
+        if (barParam) {
+          const row = rows[barParam.dataIndex] || {};
+          return `${escapeHtml(row.name)}<br>${escapeHtml(row.theme)}<br>净流入 ${escapeHtml(row.amountText)}<br>占成交 ${escapeHtml(row.shareText)}<br>ETF成交额 ${escapeHtml(row.turnoverText || "--")}`;
+        }
+        const index = params[0]?.dataIndex ?? 0;
+        return `近20日累计<br>第${index + 1}日：${fixed(trend[index], 1)}亿`;
       }
     },
-    grid: chartBaseGrid({ top: 12, right: 42, left: 18, bottom: 22 }),
-    xAxis: { type: "value", axisLabel: { formatter: "{value}亿" }, splitLine: { lineStyle: { color: "#eee1d0" } } },
-    yAxis: { type: "category", data: rows.map(item => item.name), axisTick: { show: false } },
-    series: [{
-      type: "bar",
-      data: rows.map(item => ({
-        value: Number(item.amount),
-        itemStyle: { color: Number(item.amount) >= 0 ? "#ba3b2f" : "#087d5b" }
-      })),
-      barWidth: 16,
-      label: { show: true, position: "right", formatter: params => rows[params.dataIndex]?.amountText || "" }
-    }]
+    grid: [
+      chartBaseGrid({ top: 14, right: 48, left: 18, bottom: "40%", height: "44%" }),
+      chartBaseGrid({ top: "68%", right: 48, left: 18, bottom: 18, height: "22%" })
+    ],
+    xAxis: [
+      { type: "value", axisLabel: { formatter: "{value}亿" }, splitLine: { lineStyle: { color: "#eee1d0" } } },
+      { type: "category", gridIndex: 1, data: trend.map((_, index) => `${index + 1}`), axisLabel: { formatter: value => value === "1" || value === "20" ? value : "" } }
+    ],
+    yAxis: [
+      { type: "category", data: rows.map(item => item.name), axisTick: { show: false } },
+      { type: "value", gridIndex: 1, name: "20日累计", axisLabel: { formatter: "{value}亿" }, splitLine: { lineStyle: { color: "#eee1d0" } } }
+    ],
+    series: [
+      {
+        name: "当日净流入",
+        type: "bar",
+        data: rows.map(item => ({
+          value: Number(item.amount),
+          itemStyle: { color: Number(item.amount) >= 0 ? "#c86b5a" : "#5c8d7b" }
+        })),
+        barWidth: 16,
+        label: { show: true, position: "right", formatter: params => rows[params.dataIndex]?.amountText || "" }
+      },
+      {
+        name: "近20日累计",
+        type: "line",
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: trend,
+        smooth: .2,
+        showSymbol: false,
+        lineStyle: { width: 2.2, color: "#235d82" },
+        areaStyle: { color: "rgba(35, 93, 130, .1)" }
+      }
+    ]
   };
 }
 
@@ -1087,13 +1153,13 @@ function styleFlowOption(data) {
     grid: chartBaseGrid({ top: 34, right: 36, bottom: 42, left: 54 }),
     xAxis: {
       type: "value",
-      name: "净流入（亿元）",
+      name: "资金偏好（净流入/亿元）",
       splitLine: { lineStyle: { color: "#eee1d0" } },
       axisLine: { onZero: true }
     },
     yAxis: {
       type: "value",
-      name: "拥挤度",
+      name: "交易拥挤度",
       min: 0,
       max: 100,
       axisLabel: { formatter: "{value}%" },
@@ -1182,37 +1248,91 @@ function crowdingRankOption(data) {
 
 function breadthOption(data) {
   const breadth = data.breadth || {};
+  const up = Number(breadth.up) || 0;
+  const down = Number(breadth.down) || 0;
+  const flat = Number(breadth.flat) || 0;
+  const history = Array.isArray(breadth.history) ? breadth.history : [];
   return {
-    tooltip: { trigger: "item" },
-    legend: { bottom: 0 },
-    series: [{
-      type: "pie",
-      radius: ["58%", "78%"],
-      center: ["50%", "45%"],
-      label: { formatter: "{b}\n{d}%" },
-      data: [
-        { name: "上涨", value: Number(breadth.up) || 0, itemStyle: { color: "#ba3b2f" } },
-        { name: "下跌", value: Number(breadth.down) || 0, itemStyle: { color: "#087d5b" } },
-        { name: "平盘", value: Number(breadth.flat) || 0, itemStyle: { color: "#b4aa9b" } }
-      ]
-    }]
+    tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
+    grid: [
+      chartBaseGrid({ top: 16, right: 18, left: 18, bottom: "48%", height: "34%" }),
+      chartBaseGrid({ top: "62%", right: 18, left: 18, bottom: 18, height: "26%" })
+    ],
+    xAxis: [
+      { type: "value", splitLine: { lineStyle: { color: "#eee1d0" } } },
+      { type: "category", gridIndex: 1, data: history.map(item => item.date), axisLabel: { interval: 1 } }
+    ],
+    yAxis: [
+      { type: "category", data: ["上涨", "平盘", "下跌"], axisTick: { show: false } },
+      { type: "value", gridIndex: 1, name: "A/D", splitLine: { lineStyle: { color: "#eee1d0" } } }
+    ],
+    series: [
+      {
+        name: "今日家数",
+        type: "bar",
+        data: [
+          { value: up, itemStyle: { color: "#c86b5a" } },
+          { value: flat, itemStyle: { color: "#b9ad9b" } },
+          { value: down, itemStyle: { color: "#5c8d7b" } }
+        ],
+        barWidth: 18,
+        label: { show: true, position: "right", formatter: "{c}" }
+      },
+      {
+        name: "上涨-下跌",
+        type: "line",
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: history.map(item => Number(item.advanceDecline)),
+        smooth: .18,
+        showSymbol: false,
+        lineStyle: { width: 2.2, color: "#235d82" },
+        areaStyle: { color: "rgba(35, 93, 130, .1)" },
+        markLine: { symbol: "none", lineStyle: { color: "#b9ad9b", type: "dashed" }, data: [{ yAxis: 0 }] }
+      }
+    ]
   };
 }
 
 function clusterOption(data) {
   const rows = [...(data.fundCluster?.industries || [])].reverse();
+  const trend = data.fundCluster?.concentrationTrend || [];
   return {
     tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
-    grid: chartBaseGrid({ top: 10, right: 22, left: 10, bottom: 16 }),
-    xAxis: { type: "value", max: 20, axisLabel: { formatter: "{value}%" }, splitLine: { lineStyle: { color: "#eee1d0" } } },
-    yAxis: { type: "category", data: rows.map(item => item.name), axisTick: { show: false } },
-    series: [{
-      type: "bar",
-      data: rows.map(item => Number(item.weight)),
-      barWidth: 16,
-      itemStyle: { color: "#235d82", borderRadius: [0, 8, 8, 0] },
-      label: { show: true, position: "right", formatter: "{c}%" }
-    }]
+    grid: [
+      chartBaseGrid({ top: 10, right: 22, left: 10, bottom: "48%", height: "36%" }),
+      chartBaseGrid({ top: "62%", right: 22, left: 10, bottom: 18, height: "26%" })
+    ],
+    xAxis: [
+      { type: "value", max: 20, axisLabel: { formatter: "{value}%" }, splitLine: { lineStyle: { color: "#eee1d0" } } },
+      { type: "category", gridIndex: 1, data: trend.map(item => item.date), axisLabel: { interval: 1 } }
+    ],
+    yAxis: [
+      { type: "category", data: rows.map(item => item.name), axisTick: { show: false } },
+      { type: "value", gridIndex: 1, min: 35, max: 70, axisLabel: { formatter: "{value}%" }, splitLine: { lineStyle: { color: "#eee1d0" } } }
+    ],
+    series: [
+      {
+        name: "Top行业权重",
+        type: "bar",
+        data: rows.map(item => Number(item.weight)),
+        barWidth: 16,
+        itemStyle: { color: "#235d82", borderRadius: [0, 8, 8, 0] },
+        label: { show: true, position: "right", formatter: "{c}%" }
+      },
+      {
+        name: "Top10集中度趋势",
+        type: "line",
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: trend.map(item => Number(item.value)),
+        smooth: .18,
+        showSymbol: true,
+        symbolSize: 5,
+        lineStyle: { width: 2.3, color: "#c86b5a" },
+        areaStyle: { color: "rgba(200, 107, 90, .1)" }
+      }
+    ]
   };
 }
 
@@ -1233,18 +1353,22 @@ function crowdingHistoryOption(data) {
       itemStyle: { color: "#ba3b2f" },
       markArea: {
         silent: true,
-        label: { color: "#5f554a" },
+        label: { color: "#5f554a", fontWeight: 700 },
         data: [
-          [{ yAxis: 80, name: "高拥挤：回撤风险高" }, { yAxis: 100 }],
-          [{ yAxis: 50, name: "趋势拥挤：主线持续但需跟踪" }, { yAxis: 80 }],
-          [{ yAxis: 0, name: "低拥挤：交易不集中" }, { yAxis: 50 }]
+          [{ yAxis: 80, name: "泡沫期" }, { yAxis: 100 }],
+          [{ yAxis: 50, name: "热门期" }, { yAxis: 80 }],
+          [{ yAxis: 0, name: "冷清期 / 修复期" }, { yAxis: 50 }]
         ],
-        itemStyle: { color: "rgba(210, 99, 34, .08)" }
+        itemStyle: { color: "rgba(200, 107, 90, .07)" }
       },
       markLine: {
         symbol: "none",
         lineStyle: { type: "dashed" },
-        data: [{ yAxis: 80, name: "高拥挤线" }, { yAxis: 50, name: "中性线" }]
+        data: [
+          { yAxis: 95, name: "2021新能源参考" },
+          { yAxis: 80, name: "高拥挤线" },
+          { yAxis: 50, name: "中性线" }
+        ]
       }
     }]
   };
@@ -1274,29 +1398,29 @@ function dividendOption(stock) {
 
 function scoreColor(value) {
   const num = Number(value);
-  if (num >= 85) return "#ba3b2f";
-  if (num >= 70) return "#d26322";
+  if (num >= 85) return "#c86b5a";
+  if (num >= 70) return "#c9905b";
   if (num >= 45) return "#235d82";
-  return "#087d5b";
+  return "#5c8d7b";
 }
 
 function flowStrengthColor(value) {
   const num = Number(value);
-  if (num >= 80) return "#ba3b2f";
-  if (num >= 65) return "#d26322";
-  if (num >= 45) return "#d6a351";
-  if (num >= 30) return "#8ab7a4";
-  return "#087d5b";
+  if (num >= 80) return "#c86b5a";
+  if (num >= 65) return "#d59a70";
+  if (num >= 45) return "#d8c4a3";
+  if (num >= 30) return "#91b7aa";
+  return "#5c8d7b";
 }
 
 function flowAmountColor(value) {
   const num = Number(value);
-  if (num >= 12) return "#ba3b2f";
-  if (num >= 5) return "#d26322";
-  if (num > 0) return "#d6a351";
+  if (num >= 12) return "#c86b5a";
+  if (num >= 5) return "#d59a70";
+  if (num > 0) return "#d8c4a3";
   if (num > -5) return "#d7c8ae";
-  if (num > -12) return "#7bb39e";
-  return "#087d5b";
+  if (num > -12) return "#91b7aa";
+  return "#5c8d7b";
 }
 
 function holdSignal(stock) {
@@ -1310,16 +1434,25 @@ function holdSignal(stock) {
     (pe <= 8 ? 20 : pe <= 12 ? 14 : pe <= 20 ? 8 : 2) -
     issuePenalty
   ));
-  if (score >= 78) return { score, label: "值得持有", className: "hold-hot" };
-  if (score >= 58) return { score, label: "可观察", className: "hold-warm" };
-  return { score, label: "谨慎", className: "hold-cool" };
+  if (score >= 78) return { score, label: "高股息低估", className: "hold-hot" };
+  if (score >= 58) return { score, label: "稳定分红", className: "hold-warm" };
+  return { score, label: "低增长观察", className: "hold-cool" };
 }
 
 function holdColor(score) {
   const num = Number(score);
-  if (num >= 78) return "#ba3b2f";
+  if (num >= 78) return "#c86b5a";
   if (num >= 58) return "#d6a351";
-  return "#087d5b";
+  return "#5c8d7b";
+}
+
+function valuationStatus(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return { label: "--", color: "#70685c" };
+  if (num >= 80) return { label: "偏贵/泡沫", color: "#c86b5a" };
+  if (num >= 50) return { label: "偏贵", color: "#c9905b" };
+  if (num >= 20) return { label: "合理", color: "#235d82" };
+  return { label: "偏冷/低估", color: "#5c8d7b" };
 }
 
 function renderPageHead({ eyebrow, title, subtitle, updatedAtText, usingDemo, demoReason }) {
@@ -1378,6 +1511,22 @@ async function loadOverviewHistories(payload) {
 
 function renderOverview(data, histories) {
   return `
+    <section class="section-block market-terminal-summary">
+      ${renderSectionHead("当前市场状态", "3 秒读懂当前适合进攻、防守，还是等待确认")}
+      <div class="terminal-summary-layout">
+        <div class="terminal-summary-score">
+          <span>市场温度</span>
+          <strong>${safeText(data.heat.score ?? "--")}</strong>
+          <em>${safeText(data.heat.label || "--")}</em>
+        </div>
+        <p>${safeText(data.heat.summary || "当前市场状态等待数据更新。")}</p>
+        <div class="terminal-summary-signals">
+          ${data.signals.map(item => `<span><strong>${safeText(item.label)}</strong>${safeText(item.value)}</span>`).join("")}
+        </div>
+      </div>
+      ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+    </section>
+
     <section class="section-block overview-strip-section">
       ${renderSectionHead("主要指数风格", "A股宽基、科创，美股核心和港股科技的当前点位、涨跌幅与市场风格")}
       <div class="market-style-strip">
@@ -1387,8 +1536,8 @@ function renderOverview(data, histories) {
               <strong>${safeText(item.name)}</strong>
               <span>${safeText(item.code)}</span>
             </div>
-            <em class="${item.changeClass}">${safeText(item.changePctText)}</em>
-            <small>${safeText(item.style)}</small>
+            <em class="${item.changeClass}">${safeText(item.closeText)} · ${safeText(item.changePctText)}</em>
+            <small>${safeText(item.style)} · ${safeText(item.status)}</small>
           </a>
         `).join("")}
       </div>
@@ -1476,6 +1625,7 @@ function renderMarketStyle(data) {
         <article class="panel module-card">
           <div class="section-head"><h2>ETF资金流向排行榜</h2><span>净申赎与成交额占比</span></div>
           <div class="echart etf-ranking-chart" data-chart="etf-ranking"></div>
+          <p class="chart-explain">单日净流入要和成交额一起看；近20日累计趋势用于判断是不是持续配置，而不是一天的噪音。</p>
           ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
         </article>
         <article class="panel module-card">
@@ -1484,7 +1634,12 @@ function renderMarketStyle(data) {
           ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
         </article>
         <article class="panel module-card wide">
-          <div class="section-head"><h2>10大风格流向</h2><span>横轴净流入，纵轴拥挤度，气泡大小表示成交占比</span></div>
+          <div class="section-head"><h2>10大风格流向</h2><span>横轴资金偏好，纵轴交易拥挤度，气泡大小表示成交占比</span></div>
+          <div class="chart-legend-note">
+            <span>越靠右：资金越偏好</span>
+            <span>越靠上：交易越拥挤</span>
+            <span>气泡越大：成交占比越高</span>
+          </div>
           <div class="echart style-flow-chart" data-chart="style-flow"></div>
           ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
         </article>
@@ -1513,7 +1668,7 @@ function renderMarketStyle(data) {
           <div class="section-head"><h2>基金抱团</h2><span>重仓股 / 行业集中度</span></div>
           <div class="cluster-score">
             <strong>${safeText(data.crowding.fundCluster.concentrationText)}</strong>
-            <span>Top 行业集中度</span>
+            <span>Top5行业集中度，处于历史高位</span>
           </div>
           <div class="tag-row cluster-tags">
             ${data.crowding.fundCluster.topStocks.map(name => `<span>${safeText(name)}</span>`).join("")}
@@ -1523,7 +1678,7 @@ function renderMarketStyle(data) {
         </article>
         <article class="panel module-card wide">
           <div class="section-head"><h2>拥挤历史</h2><span>主线交易拥挤度，越高代表越容易出现回撤或风格切换</span></div>
-          <p class="chart-explain">这条线用于判断当前主线是不是已经被过度交易：80% 以上是高拥挤区，50%-80% 是趋势拥挤区，50% 以下说明交易还不算集中。</p>
+          <p class="chart-explain">拥挤度 = 成交占比 + 资金流入占比 + 基金集中度。80% 以上接近泡沫期，50%-80% 是热门期，50% 以下说明交易还没有明显集中。</p>
           <div class="echart crowding-history-chart" data-chart="crowding-history"></div>
           ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
         </article>
@@ -1641,6 +1796,7 @@ function renderValueInvesting(data) {
               </div>
             </header>
             ${renderDividendSpark(item.trend, index)}
+            <p class="dividend-position">近10年股息率位置：${safeText(item.dividendPercentileText)}</p>
             <dl>
               <div><dt>PE</dt><dd>${safeText(item.peText)}</dd></div>
               <div><dt>派息率</dt><dd>${safeText(item.payoutText)}</dd></div>
@@ -1667,8 +1823,9 @@ function renderHistory(data) {
   return `
     <article class="history-dashboard-card">
       <a class="history-back-link" href="#/overview">返回市场温度</a>
-      <h2 class="history-dashboard-title">${safeText(market.name)}：市值 / 营收 / PE / 巴菲特指标趋势图</h2>
+      <h2 class="history-dashboard-title">${safeText(market.name)}：市值与营收是否匹配</h2>
       ${renderHistoryStatStrip(series)}
+      <p class="chart-explain">主图只回答一个问题：企业基本面增长能否支撑指数总市值。PE 与巴菲特指标拆到下方单独判断估值和宏观泡沫。</p>
       <div class="chart-wrap history-main-wrap">
         <div class="echart history-main-chart" data-chart="history-main"></div>
       </div>
@@ -1676,12 +1833,20 @@ function renderHistory(data) {
     </article>
     <section class="history-subchart-grid">
       <article class="history-dashboard-card">
-        <h2 class="subchart-title">PE 估值分位（TTM）</h2>
-        <div class="echart history-subchart" data-chart="pe-percentile"></div>
+        <h2 class="subchart-title">PE + PE估值分位</h2>
+        <p class="chart-explain">回答“现在贵不贵”：分位越低越偏冷，分位越高越接近泡沫。</p>
+        <div class="echart history-subchart" data-chart="pe-valuation"></div>
+        ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
+      </article>
+      <article class="history-dashboard-card">
+        <h2 class="subchart-title">巴菲特指标</h2>
+        <p class="chart-explain">回答“市场整体是否泡沫”：它是宏观估值，不和指数自身指标堆在同一张主图。</p>
+        <div class="echart history-subchart" data-chart="buffett-indicator"></div>
         ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
       </article>
       <article class="history-dashboard-card">
         <h2 class="subchart-title">营收增速（TTM）与市值增速（TTM）</h2>
+        <p class="chart-explain">如果市值增速长期高于营收增速，通常说明估值正在扩张。</p>
         <div class="echart history-subchart" data-chart="growth-compare"></div>
         ${renderSectionUpdated(data.updatedAtText, data.usingDemo)}
       </article>
@@ -1925,6 +2090,8 @@ function normalizeFundFlow(payload) {
         amountText: `${Number(item.amount) > 0 ? "+" : ""}${fixed(item.amount, 1)}亿`,
         amountClass: changeClass(item.amount),
         shareText: ratioLabel(turnoverTotal ? amountYuan / turnoverTotal * 100 : null),
+        turnoverText: item.turnover ? `${fixed(item.turnover, 0)}亿` : "--",
+        trend: Array.isArray(item.trend) ? item.trend : [],
         width: barWidth(Math.abs(item.amount), etfMax)
       };
     }),
@@ -2022,6 +2189,7 @@ function normalizeCrowding(payload) {
       ...(data.fundCluster || {}),
       concentrationText: ratioLabel(data.fundCluster?.concentration),
       topStocks: data.fundCluster?.topStocks || [],
+      concentrationTrend: data.fundCluster?.concentrationTrend || [],
       industries: (data.fundCluster?.industries || []).map(item => ({
         ...item,
         weightText: ratioLabel(item.weight),
@@ -2052,12 +2220,16 @@ function normalizeValueInvesting(payload) {
     summary: data.summary || "",
     stocks: (data.stocks || []).map(item => {
       const hold = holdSignal(item);
+      const trend = item.trend || [];
+      const dividendPercentile = percentileRank(trend, item.dividendYield);
       return {
         ...item,
         dividendYieldText: ratioLabel(item.dividendYield),
+        dividendPercentile,
+        dividendPercentileText: ratioLabel(dividendPercentile),
         payoutText: ratioLabel(item.payout),
         peText: `${fixed(item.pe, 1)}x`,
-        trend: item.trend || [],
+        trend,
         holdScore: hold.score,
         holdLabel: hold.label,
         holdClass: hold.className
@@ -2175,6 +2347,13 @@ function stockQuoteUrl(code) {
 function ratioLabel(value) {
   const num = Number(value);
   return Number.isFinite(num) ? `${num.toFixed(0)}%` : "--";
+}
+
+function percentileRank(values, current) {
+  const list = (Array.isArray(values) ? values : []).map(Number).filter(Number.isFinite);
+  const num = Number(current);
+  if (!list.length || !Number.isFinite(num)) return null;
+  return list.filter(value => value <= num).length / list.length * 100;
 }
 
 function changeClass(value) {

@@ -312,6 +312,74 @@ h3 {
   gap: 10px;
 }
 
+.terminal-summary-layout {
+  display: grid;
+  grid-template-columns: 156px minmax(260px, 1fr) minmax(280px, .8fr);
+  align-items: stretch;
+  gap: 16px;
+}
+
+.terminal-summary-score {
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  padding: 16px;
+  color: #fffaf1;
+  background:
+    radial-gradient(circle at 32% 26%, rgb(246 207 132 / 72%) 0, transparent 36%),
+    linear-gradient(135deg, #2a2520 0%, #8b5032 100%);
+}
+
+.terminal-summary-score span,
+.terminal-summary-score strong,
+.terminal-summary-score em {
+  display: block;
+}
+
+.terminal-summary-score span {
+  color: rgb(255 250 241 / 76%);
+  font-size: 13px;
+}
+
+.terminal-summary-score strong {
+  font-size: 52px;
+  line-height: 1;
+}
+
+.terminal-summary-score em {
+  font-style: normal;
+  font-weight: 850;
+}
+
+.terminal-summary-layout p {
+  margin: 0;
+  border-radius: 8px;
+  padding: 20px;
+  color: #40382f;
+  background: #fff2d4;
+  font-size: 18px;
+}
+
+.terminal-summary-signals {
+  display: grid;
+  gap: 10px;
+}
+
+.terminal-summary-signals span {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: var(--muted);
+  background: #fff8ea;
+}
+
+.terminal-summary-signals strong {
+  color: var(--text);
+}
+
 .market-style-strip a {
   display: grid;
   grid-template-rows: auto auto auto;
@@ -650,6 +718,21 @@ h3 {
 
 .style-flow-chart {
   min-height: 430px;
+}
+
+.chart-legend-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -2px 0 10px;
+}
+
+.chart-legend-note span {
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: #4c4438;
+  background: #f1e4cd;
+  font-size: 12px;
 }
 
 .style-mainline-layout {
@@ -1081,9 +1164,15 @@ h3 {
 }
 
 .dividend-spark {
-  height: 92px;
-  min-height: 92px;
-  margin: 18px 0;
+  height: 112px;
+  min-height: 112px;
+  margin: 14px 0 8px;
+}
+
+.dividend-position {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .value-stock-card dl {
@@ -1535,7 +1624,7 @@ h3 {
 
 .history-subchart-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   margin-top: 14px;
 }
@@ -1548,7 +1637,7 @@ h3 {
 }
 
 .history-subchart {
-  height: 300px;
+  height: 320px;
 }
 
 .history-info-grid {
@@ -1832,6 +1921,7 @@ h3 {
   .flow-hero.compact,
   .style-mainline-layout,
   .style-evidence-grid,
+  .terminal-summary-layout,
   .history-subchart-grid,
   .history-info-grid {
     grid-template-columns: 1fr;
