@@ -1,4 +1,4 @@
-import { requestMarket } from "./data.js";
+import { ENABLE_DEMO_FALLBACK, requestMarket } from "./data.js";
 import * as echarts from "./vendor/echarts.esm.min.js";
 
 const routes = [
@@ -543,15 +543,6 @@ async function load() {
     return;
   }
 
-  if (route.endpoint) {
-    state.status = "ready";
-    state.error = "";
-    state.histories = {};
-    state.data = buildDemoPage(route.id);
-    render();
-    return;
-  }
-
   state.status = "loading";
   state.error = "";
   render();
@@ -561,8 +552,16 @@ async function load() {
     state.histories = route.id === "overview" ? await loadOverviewHistories(state.data) : {};
     state.status = "ready";
   } catch (error) {
-    state.status = "error";
-    state.error = error.message || "数据加载失败";
+    if (ENABLE_DEMO_FALLBACK) {
+      state.data = buildDemoPage(route.id);
+      state.data.demoReason = error.message || "接口数据加载失败，当前展示演示数据";
+      state.histories = {};
+      state.status = "ready";
+      state.error = state.data.demoReason;
+    } else {
+      state.status = "error";
+      state.error = error.message || "数据加载失败";
+    }
   }
   render();
 }
