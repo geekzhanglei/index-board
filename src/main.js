@@ -1593,7 +1593,7 @@ function dividendOption(stock) {
   const labels = values.map((_, index) => `${currentYear - values.length + index + 1}`);
   return {
     grid: { top: 16, right: 6, bottom: 20, left: 6 },
-    tooltip: { trigger: "axis", valueFormatter: value => `${Number(value).toFixed(1)}%` },
+    tooltip: { trigger: "axis", valueFormatter: value => `${Number(value).toFixed(2)}%` },
     xAxis: { type: "category", data: labels, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: "#8a8174", fontSize: 10 } },
     yAxis: { type: "value", show: false },
     series: [{
@@ -1604,7 +1604,7 @@ function dividendOption(stock) {
       lineStyle: { width: 3, color: holdColor(stock.holdScore) },
       itemStyle: { color: holdColor(stock.holdScore) },
       areaStyle: { color: `${holdColor(stock.holdScore)}22` },
-      label: { show: true, position: "top", formatter: "{c}%", fontSize: 10, color: "#70685c" }
+      label: { show: true, position: "top", formatter: params => `${Number(params.value).toFixed(2)}%`, fontSize: 10, color: "#70685c" }
     }]
   };
 }
@@ -2771,7 +2771,7 @@ function normalizeValueInvesting(payload) {
       const dividendPercentile = percentileRank(trend, item.dividendYield);
       return {
         ...item,
-        dividendYieldText: ratioLabel(item.dividendYield),
+        dividendYieldText: percentLabel(item.dividendYield, 2),
         dividendPercentile,
         dividendPercentileText: ratioLabel(dividendPercentile),
         payoutText: ratioLabel(item.payout),
@@ -2899,6 +2899,11 @@ function stockQuoteUrl(code) {
 function ratioLabel(value) {
   const num = finiteNumber(value);
   return Number.isFinite(num) ? `${num.toFixed(0)}%` : "--";
+}
+
+function percentLabel(value, digits = 2) {
+  const num = finiteNumber(value);
+  return Number.isFinite(num) ? `${num.toFixed(digits)}%` : "--";
 }
 
 function percentileRank(values, current) {
