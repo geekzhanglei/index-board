@@ -38,8 +38,8 @@ const demoIndexCards = [
     status: "拥挤",
     close: 4969.81,
     changePct: 1.12,
-    peTtm: 26,
-    pePercentile: 100,
+    peTtm: 13.4,
+    pePercentile: 36,
     marketCap: 56200000000000,
     marketCapChangePct: 29
   },
@@ -52,8 +52,8 @@ const demoIndexCards = [
     status: "拥挤",
     close: 5312.42,
     changePct: 0.96,
-    peTtm: 24.1,
-    pePercentile: 91,
+    peTtm: 16.1,
+    pePercentile: 42,
     marketCap: 73800000000000,
     marketCapChangePct: 24.8
   },
@@ -67,7 +67,7 @@ const demoIndexCards = [
     close: 7348.25,
     changePct: 0.68,
     peTtm: 37.8,
-    pePercentile: 82,
+    pePercentile: 74,
     marketCap: 16800000000000,
     marketCapChangePct: 18.6
   },
@@ -81,7 +81,7 @@ const demoIndexCards = [
     close: 1086.43,
     changePct: 1.86,
     peTtm: 48.2,
-    pePercentile: 76,
+    pePercentile: 72,
     marketCap: 6400000000000,
     marketCapChangePct: 22.4
   },
@@ -94,7 +94,7 @@ const demoIndexCards = [
     status: "拥挤",
     close: 19328.71,
     changePct: 0.44,
-    peTtm: 31.6,
+    peTtm: 30.2,
     pePercentile: 88,
     marketCap: 33100000000000,
     marketCapChangePct: 25.2,
@@ -109,8 +109,8 @@ const demoIndexCards = [
     status: "偏热",
     close: 5867.92,
     changePct: 0.27,
-    peTtm: 28.4,
-    pePercentile: 80,
+    peTtm: 22.4,
+    pePercentile: 71,
     marketCap: 67800000000000,
     marketCapChangePct: 21.9,
     currency: "USD"
@@ -124,7 +124,7 @@ const demoIndexCards = [
     status: "中性",
     close: 23142.56,
     changePct: -0.32,
-    peTtm: 11.8,
+    peTtm: 11.2,
     pePercentile: 48,
     marketCap: 41500000000000,
     marketCapChangePct: 13.7,
@@ -139,7 +139,7 @@ const demoIndexCards = [
     status: "偏冷",
     close: 5128.76,
     changePct: -0.76,
-    peTtm: 22.5,
+    peTtm: 24.0,
     pePercentile: 34,
     marketCap: 9300000000000,
     marketCapChangePct: 8.1,
@@ -459,16 +459,17 @@ const demoMarketStyle = {
   source: "demo",
   updatedAt: "2026-06-03T01:00:00+08:00",
   mainline: {
-    name: "金融红利",
-    score: 86,
-    netFlow: 68.4,
-    turnoverShare: 18.6,
-    crowding: 74,
-    verdict: "当前主线是金融红利：资金流入强、成交占比高，拥挤度偏高但未到极端。",
+    name: "科技成长",
+    score: 84,
+    netFlow: 39.6,
+    turnoverShare: 16.2,
+    crowding: 84,
+    trendScore: 91,
+    verdict: "当前主线是科技成长：近几个月持续性强，单日资金流只是确认信号。",
     reasons: [
-      "银行、运营商、高股息央企持续承接防守资金。",
-      "净流入占成交额比例高于其他风格，说明不是日内噪音。",
-      "市场广度偏弱，指数上涨更多来自权重和红利资产。"
+      "AI、计算机和通信方向连续承接风险偏好。",
+      "主线判断优先看近几个月持续性，不用单日第一名替代主线。",
+      "拥挤度偏高，说明主线仍强但回撤风险也在上升。"
     ]
   },
   styles: marketStyleCatalog,
@@ -515,6 +516,9 @@ load();
 function getRoute() {
   const id = window.location.hash.replace(/^#\/?/, "");
   if (id.startsWith("history/")) {
+    return id;
+  }
+  if (id === "market-status") {
     return id;
   }
   return routes.some(route => route.id === id) ? id : "overview";
@@ -571,6 +575,9 @@ async function load() {
 }
 
 function currentRoute() {
+  if (state.route === "market-status") {
+    return { id: "market-status", endpoint: "/blogapi/market/overview" };
+  }
   return routes.find(route => route.id === state.route) || routes[0];
 }
 
@@ -581,7 +588,7 @@ function render() {
       <a class="brand" href="#/overview" aria-label="大盘概览">
         <span class="brand-mark">M</span>
         <span>
-          <strong>大盘概览</strong>
+          <strong>市场温度</strong>
           <small>money.feroad.com</small>
         </span>
       </a>
@@ -614,6 +621,7 @@ function renderBody() {
 
   const route = currentRoute();
   if (state.route.startsWith("history/")) return renderHistory(normalizeHistory(state.data));
+  if (state.route === "market-status") return renderMarketStatusDetail(normalizeOverview(state.data));
   if (route.id === "overview") return renderOverview(normalizeOverview(state.data), state.histories);
   if (route.id === "market-style") return renderMarketStyle(normalizeMarketStyle(state.data));
   if (route.id === "crowding") return renderCrowding(normalizeCrowding(extractCrowdingPayload(state.data)));
@@ -645,10 +653,16 @@ function mountCharts() {
     const series = buildHistorySeries(data.points, data.market);
     mountChart("history-main", historyMainOption(series, data.market));
     mountChart("pe-valuation", peValuationOption(series));
-    mountChart("buffett-indicator", buffettIndicatorOption(series));
     mountChart("growth-compare", growthCompareOption(series));
   } else {
     const route = currentRoute();
+    if (route.id === "market-status") {
+      const data = normalizeOverview(state.data);
+      data.marketStatus.items.forEach(item => mountChart(`status-${item.id}`, marketStatusIndexOption(item)));
+      Object.entries(data.marketStatus.buffettPanels).forEach(([key, panel]) => {
+        mountChart(`buffett-${key}`, macroBuffettOption(panel));
+      });
+    }
     if (route.id === "overview") {
       const data = normalizeOverview(state.data);
       mountChart("global-market-capacity", globalMarketCapacityOption(data));
@@ -752,7 +766,7 @@ function historyMainOption(series, market) {
   const dates = list.map(item => item.date);
   const latestName = safeText(market?.name || "指数");
   return {
-    color: ["#7db2f2", "#c86b5a"],
+    color: ["#7db2f2", "#c86b5a", "#7c55d9"],
     animationDuration: 550,
     tooltip: {
       trigger: "axis",
@@ -762,9 +776,9 @@ function historyMainOption(series, market) {
     legend: {
       top: 8,
       itemGap: 28,
-      data: ["总营收（TTM）", "总市值"]
+      data: ["总营收（TTM）", "总市值", "PE（TTM）"]
     },
-    grid: chartBaseGrid({ top: 70, right: 42, left: 70, bottom: 50 }),
+    grid: chartBaseGrid({ top: 70, right: 72, left: 118, bottom: 50 }),
     xAxis: {
       type: "category",
       boundaryGap: true,
@@ -776,7 +790,7 @@ function historyMainOption(series, market) {
       {
         type: "value",
         name: "市值（万亿）",
-        position: "right",
+        position: "left",
         nameLocation: "end",
         nameGap: 22,
         nameTextStyle: { color: "#c86b5a", fontWeight: 700 },
@@ -787,10 +801,22 @@ function historyMainOption(series, market) {
         type: "value",
         name: "营收（万亿）",
         position: "left",
+        offset: 56,
         nameLocation: "end",
         nameGap: 22,
         nameTextStyle: { color: "#2f74d0", fontWeight: 700 },
         axisLabel: { color: "#2f74d0" },
+        splitLine: { show: false }
+      },
+      {
+        type: "value",
+        name: "PE（倍）",
+        position: "right",
+        nameLocation: "end",
+        nameGap: 22,
+        min: 0,
+        nameTextStyle: { color: "#7c55d9", fontWeight: 700 },
+        axisLabel: { color: "#7c55d9" },
         splitLine: { show: false }
       }
     ],
@@ -824,6 +850,15 @@ function historyMainOption(series, market) {
         smooth: .12,
         showSymbol: false,
         lineStyle: { width: 2.4, color: "#c86b5a" }
+      },
+      {
+        name: "PE（TTM）",
+        type: "line",
+        yAxisIndex: 2,
+        data: list.map(item => chartNumber(item.pe)),
+        smooth: .14,
+        showSymbol: false,
+        lineStyle: { width: 2.2, color: "#7c55d9" }
       }
     ],
     aria: { enabled: true, label: { description: `${latestName}十年市值和营收趋势图` } }
@@ -987,6 +1022,64 @@ function globalMarketCapacityOption(data) {
         lineStyle: { color: "#5c8d7b", type: "dashed" },
         label: { formatter: "中美核心市场", color: "#5c8d7b", fontWeight: 700 },
         data: [{ xAxis: round(maxCap / 1000000000000) }]
+      }
+    }]
+  };
+}
+
+function marketStatusIndexOption(item) {
+  const points = Array.isArray(item.points) ? item.points : [];
+  if (!points.length) return emptyChartOption("暂无指数历史数据");
+  return {
+    color: [Number(item.changePct) >= 0 ? "#ba3b2f" : "#087d5b"],
+    tooltip: {
+      trigger: "axis",
+      valueFormatter: value => Number.isFinite(Number(value)) ? Number(value).toFixed(2) : value
+    },
+    grid: chartBaseGrid({ top: 28, right: 24, left: 52, bottom: 34 }),
+    xAxis: { type: "category", data: points.map(point => point.date), axisLabel: { interval: 11 } },
+    yAxis: { type: "value", name: "点位", splitLine: { lineStyle: { color: "#ece3d5", type: "dashed" } } },
+    series: [{
+      name: item.name,
+      type: "line",
+      smooth: .18,
+      showSymbol: false,
+      data: points.map(point => chartNumber(point.close)),
+      lineStyle: { width: 2.6 },
+      areaStyle: { color: Number(item.changePct) >= 0 ? "rgba(186,59,47,.1)" : "rgba(8,125,91,.1)" }
+    }]
+  };
+}
+
+function macroBuffettOption(panel) {
+  const points = Array.isArray(panel?.points) ? panel.points : [];
+  if (!points.length) return emptyChartOption("暂无巴菲特指标数据");
+  const maxValue = Math.max(...points.map(point => Number(point.value) || 0), 100);
+  return {
+    color: ["#235d82"],
+    tooltip: { trigger: "axis", valueFormatter: value => `${Number(value).toFixed(1)}%` },
+    grid: chartBaseGrid({ top: 30, right: 22, left: 46, bottom: 32 }),
+    xAxis: { type: "category", data: points.map(point => point.date) },
+    yAxis: {
+      type: "value",
+      min: 0,
+      max: Math.ceil(maxValue / 20) * 20,
+      axisLabel: { formatter: "{value}%" },
+      splitLine: { lineStyle: { color: "#ece3d5", type: "dashed" } }
+    },
+    series: [{
+      name: panel.title,
+      type: "line",
+      smooth: .2,
+      showSymbol: true,
+      symbolSize: 6,
+      data: points.map(point => chartNumber(point.value)),
+      lineStyle: { width: 2.6 },
+      areaStyle: { color: "rgba(35,93,130,.1)" },
+      markLine: {
+        symbol: "none",
+        lineStyle: { color: "#c9905b", type: "dashed" },
+        data: [{ yAxis: 80, name: "偏热参考" }, { yAxis: 100, name: "泡沫参考" }]
       }
     }]
   };
@@ -1260,6 +1353,7 @@ function styleFlowOption(data) {
         const item = rows[params.dataIndex] || {};
         return [
           `<strong>${escapeHtml(item.name)}</strong>`,
+          `中期趋势：${escapeHtml(item.trendText || "--")}`,
           `净流入：${escapeHtml(item.amountText || "--")}`,
           `资金强度：${escapeHtml(item.strengthText || "--")}`,
           `交易活跃度：${escapeHtml(item.crowdingText || "--")}`,
@@ -1272,13 +1366,16 @@ function styleFlowOption(data) {
     grid: chartBaseGrid({ top: 34, right: 36, bottom: 42, left: 54 }),
     xAxis: {
       type: "value",
-      name: "资金偏好（净流入/亿元）",
+      name: "中期趋势",
+      min: 0,
+      max: 100,
+      axisLabel: { formatter: "{value}%" },
       splitLine: { lineStyle: { color: "#eee1d0" } },
       axisLine: { onZero: true }
     },
     yAxis: {
       type: "value",
-      name: "交易活跃度",
+      name: "当日资金确认",
       min: 0,
       max: 100,
       axisLabel: { formatter: "{value}%" },
@@ -1287,10 +1384,10 @@ function styleFlowOption(data) {
     series: [{
       type: "scatter",
       data: rows.map(item => ({
-        value: [Number(item.amount), Number(item.crowding || 0)],
+        value: [Number(item.trendScore || 50), Number(item.strength || 0)],
         symbolSize: Math.max(18, Math.min(54, Number(item.turnoverShare || 8) * 2.6)),
         itemStyle: {
-          color: flowStrengthColor(item.strength),
+          color: scoreColor(item.crowding),
           opacity: .86
         }
       })),
@@ -1304,48 +1401,45 @@ function styleFlowOption(data) {
       markLine: {
         symbol: "none",
         lineStyle: { color: "#cbbda7", type: "dashed" },
-        data: [{ xAxis: 0 }, { yAxis: 70 }]
+        data: [{ xAxis: 70, name: "趋势强" }, { yAxis: 65, name: "资金确认" }]
       }
     }]
   };
 }
 
 function industryCrowdingOption(data) {
-  const rows = [...(data.industries || [])].sort((a, b) => Number(a.marketCap) - Number(b.marketCap));
+  const rows = [...(data.industries || [])].sort((a, b) => Number(b.marketCap) - Number(a.marketCap));
   return {
     tooltip: {
-      trigger: "axis",
-      axisPointer: { type: "shadow" },
       formatter: params => {
-        const row = rows[params[0]?.dataIndex] || {};
+        const row = params.data || {};
         return `${escapeHtml(row.name)}<br>市值 ${escapeHtml(row.marketCapText)}<br>拥挤度 ${escapeHtml(row.scoreText)}<br>成交占比 ${escapeHtml(row.turnoverShareText)}<br>资金 ${escapeHtml(row.fundFlowText)}`;
       }
     },
-    legend: { top: 4, data: ["行业市值", "拥挤度"] },
-    grid: chartBaseGrid({ top: 44, right: 64, left: 18, bottom: 28 }),
-    xAxis: [
-      { type: "value", name: "万亿元", splitLine: { lineStyle: { color: "#eee1d0" } } },
-      { type: "value", name: "拥挤度", max: 100, axisLabel: { formatter: "{value}%" }, splitLine: { show: false } }
-    ],
-    yAxis: { type: "category", data: rows.map(item => item.name), axisTick: { show: false } },
-    series: [
-      {
-        name: "行业市值",
-        type: "bar",
-        data: rows.map(item => round(Number(item.marketCap) / 1000000000000)),
-        barWidth: 16,
-        itemStyle: { color: "#d6a351", borderRadius: [0, 8, 8, 0] },
-        label: { show: true, position: "right", formatter: params => `${params.value}万亿` }
+    series: [{
+      type: "treemap",
+      roam: false,
+      nodeClick: false,
+      breadcrumb: { show: false },
+      squareRatio: 1.15,
+      data: rows.map(item => ({
+        ...item,
+        value: Math.max(Number(item.marketCap) || 1, 1),
+        itemStyle: {
+          color: scoreColor(item.score),
+          borderColor: "#fffaf1",
+          borderWidth: 3,
+          gapWidth: 3
+        }
+      })),
+      label: {
+        show: true,
+        color: "#202020",
+        fontWeight: 850,
+        formatter: params => `${params.data.name}\n${params.data.scoreText}`
       },
-      {
-        name: "拥挤度",
-        type: "scatter",
-        xAxisIndex: 1,
-        data: rows.map(item => Number(item.score)),
-        symbolSize: 16,
-        itemStyle: { color: "#ba3b2f" }
-      }
-    ]
+      upperLabel: { show: false }
+    }]
   };
 }
 
@@ -1594,10 +1688,12 @@ function renderSectionHead(title, note = "", aside = "") {
   return `
     <div class="section-title-row">
       <div class="section-heading-main">
-        <h2>${safeText(title)}</h2>
+        <div class="section-heading-line">
+          <h2>${safeText(title)}</h2>
+          ${aside || ""}
+        </div>
         ${note ? `<p>${safeText(note)}</p>` : ""}
       </div>
-      ${aside || ""}
     </div>
   `;
 }
@@ -1613,26 +1709,28 @@ function renderSectionUpdated(updatedAtText, usingDemo = false, logic = "") {
 }
 
 const calcLogic = {
-  marketTemperature: "大盘温度 = 主要指数PE历史分位均值；流动性信号 = 指数当前市值相对区间首月市值的扩张/收缩；缺失PE时用近一年收盘价分位估算估值温度。",
+  marketTemperature: "大盘温度 = 主要指数PE历史分位均值；市场状态综合上证、深成、创业板、两市成交额和全A涨跌家数。",
   globalCapacity: "全球市场容量采用 Visual Capitalist 2026-05-26 公开表格，原始口径为 Bloomberg 计算的2026年4月各国主要交易所本土上市公司总市值；数据写死为前十大市场，右下角显示数据口径时间。",
   indexStyle: "主要指数风格来自固定指数定义；点位和涨跌幅优先取公开行情快照，快照缺失时用历史月线最新收盘兜底。",
   indexCards: "指数温度卡片展示点位、涨跌幅、PE、PE分位和总市值；PE分位基于历史区间排序，越高代表越热。",
-  mainline: "当前主线 = 10大风格中综合热度最高者；综合热度由资金强度、成交占比和拥挤程度合成。",
+  mainline: "当前主线 = 10大风格中期主线评分最高者；评分权重为中期趋势45%、单日资金强度25%、成交拥挤18%、行业广度12%。",
   styleHeatmap: "风格热力图颜色表示资金强度；hover展示风格市值、净流入、拥挤度、估值位置和市场广度。",
   styleTimeline: "历史风格轮动为人工定义的长期主线参考，用来辅助判断当前资金方向是否处在历史相似阶段。",
   flowScale: "资金盘子 = 全市场成交额；主线净流入 = 10大风格净流入合计；净流入/成交额用于判断绝对资金量是否有意义。",
-  etfFlow: "ETF资金流向优先使用万得结构化数据；单日净流入要结合成交额占比判断，近20日趋势用于判断是否持续配置。",
+  etfFlow: "ETF资金流向优先使用万得结构化数据；若ETF直接净流入缺失，则使用风格资金代理，近20日趋势用于判断是否持续配置。",
   industryFlow: "行业资金流优先使用万得申万一级行业数据，面积代表行业市值，颜色代表当日主力净流入/流出强度。",
-  styleFlow: "10大风格流向横轴为净流入，纵轴为交易活跃度，气泡大小为成交占比。",
+  styleFlow: "10大风格主线图横轴为中期趋势，纵轴为当日资金确认，气泡大小为成交占比，颜色代表拥挤度。",
   industryCrowding: "行业规模与拥挤度优先使用万得申万一级行业数据：行业总市值、成交占比、主力净流入和估值位置综合，用来识别大行业是否过热。",
   crowdingRank: "拥挤度排行榜按成交占比、资金流强度和估值分位排序，分数越高代表越容易出现回撤或风格切换。",
   breadth: "市场广度统计全A上涨、下跌和平盘家数；若指数上涨但多数股票下跌，说明权重抱团明显。",
   fundCluster: "基金抱团用头部行业市值占比和Top重仓股集中度近似，集中度越高代表交易越拥挤。",
-  crowdingHistory: "拥挤历史记录主线交易拥挤度，80%以上偏泡沫，50%-80%为热门期，50%以下代表集中度不高。",
+  crowdingHistory: "主线拥挤度历史记录当前主线的交易集中度，80%以上偏泡沫，50%-80%为热门期，50%以下代表集中度不高。",
   valueStocks: "价值投资候选股固定为四大行、招商银行、贵州茅台、长江电力、中国神华；股息率趋势优先来自万得近10年年末股息率，持有热度由股息率分位、PE、派息率和风险标记合成。",
-  historyMain: "指数详情主图使用10年月度历史：柱状为估算总营收，红线为估算市值，紫线为PE，绿线为巴菲特指标；历史点位来自公开月线接口。",
+  allABuffett: "全A巴菲特指标 = A股总市值 / 中国GDP，用来判断A股整体宏观估值水位。",
+  usBuffett: "美股巴菲特指标 = 美国上市公司总市值 / 美国GDP，用来判断美股宏观估值水位。",
+  fedLiquidity: "美联储流动性周期按资产负债表、联邦基金利率和政策方向归类，用来辅助判断全球风险偏好。",
+  historyMain: "指数详情主图使用10年月度历史：柱状为估算总营收，红线为估算市值，紫线为PE；历史点位来自公开月线接口。",
   historyPe: "PE估值分位 = 当前月PE在10年历史PE序列中的排序位置，分位越高估值越贵。",
-  historyBuffett: "巴菲特指标 = A股/指数估算总市值与GDP或基准容量的相对位置，用来观察宏观估值水位。",
   historyGrowth: "增长对比 = 营收同比增速与市值同比增速；市值涨得快于营收时，估值扩张贡献更大。"
 };
 
@@ -1654,22 +1752,84 @@ async function loadOverviewHistories(payload) {
   return Object.fromEntries(entries);
 }
 
+function renderMarketStatusDetail(data) {
+  const status = data.marketStatus;
+  return `
+    <section class="section-block market-status-detail">
+      ${renderSectionHead("当前市场状态", "指数、成交额、涨跌家数和宏观流动性放在一起看")}
+      <a class="history-back-link" href="#/overview">返回大盘概览</a>
+      <div class="market-status-hero">
+        <article>
+          <span>两市成交额</span>
+          <strong>${safeText(status.turnoverText)}</strong>
+          <em>${safeText(status.summary)}</em>
+        </article>
+        <article class="${status.breadthConclusionClass}">
+          <span>市场广度</span>
+          <strong>${safeText(status.breadthConclusion)}</strong>
+          <em>${safeText(status.breadth.note)}</em>
+        </article>
+      </div>
+      <div class="market-status-index-grid">
+        ${status.items.map(item => `
+          <article class="panel">
+            <div class="section-head">
+              <h2>${safeText(item.name)}</h2>
+              <span class="${item.changeClass}">${safeText(item.changePctText)}</span>
+            </div>
+            <div class="status-index-kpis">
+              <span>当前点位 <strong>${safeText(item.closeText)}</strong></span>
+              <span>10年涨跌 <strong class="${item.tenYearClass}">${safeText(item.tenYearText)}</strong></span>
+            </div>
+            <div class="echart status-index-chart" data-chart="status-${safeText(item.id)}"></div>
+          </article>
+        `).join("")}
+      </div>
+    </section>
+
+    <section class="module-grid market-status-macro">
+      ${Object.entries(status.buffettPanels).map(([key, panel]) => `
+        <article class="panel module-card">
+          <div class="section-head"><h2>${safeText(panel.title)}</h2><span>${safeText(panel.logic)}</span></div>
+          <div class="echart macro-buffett-chart" data-chart="buffett-${safeText(key)}"></div>
+          ${renderSectionUpdated(data.updatedAtText, data.usingDemo, key === "allA" ? calcLogic.allABuffett : calcLogic.usBuffett)}
+        </article>
+      `).join("")}
+      <article class="panel module-card wide">
+        <div class="section-head"><h2>美联储十年流动性周期</h2><span>判断美元流动性处在放水、收水还是高利率横盘</span></div>
+        <div class="fed-cycle-table">
+          ${status.fedLiquidity.map(row => `
+            <div>
+              <strong>${safeText(row.year)}</strong>
+              <span>${safeText(row.stance)}</span>
+              <em>资产负债表 ${safeText(fixed(row.balanceSheet, 2))} 万亿美元 · 利率 ${safeText(pct(row.rate, 2))}</em>
+              <p>${safeText(row.note)}</p>
+            </div>
+          `).join("")}
+        </div>
+        ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.fedLiquidity)}
+      </article>
+    </section>
+  `;
+}
+
 function renderOverview(data, histories) {
   return `
     <section class="section-block market-terminal-summary">
       ${renderSectionHead("当前市场状态", "3 秒读懂当前适合进攻、防守，还是等待确认")}
+      <a class="terminal-summary-link" href="#/market-status" aria-label="查看市场状态详情">
       <div class="terminal-summary-layout">
         <div class="terminal-summary-score">
           <span>大盘温度</span>
           <strong>${safeText(data.heat.score ?? "--")}</strong>
           <em>${safeText(data.heat.label || "--")}</em>
         </div>
-        <p>${safeText(data.heat.summary || "当前市场状态等待数据更新。")}</p>
+        <p>${safeText(data.marketStatus.summary || data.heat.summary || "当前市场状态等待数据更新。")}</p>
         <div class="terminal-summary-signals">
-          ${data.signals.map(item => `<span><strong>${safeText(item.label)}</strong>${safeText(item.value)}</span>`).join("")}
+          ${data.marketStatus.statusRows.map(item => `<span><strong>${safeText(item.label)}</strong>${safeText(item.value)}</span>`).join("")}
         </div>
       </div>
-      ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.marketTemperature)}
+      </a>
     </section>
 
     <section class="section-block overview-strip-section">
@@ -1690,7 +1850,7 @@ function renderOverview(data, histories) {
     </section>
 
     <section class="section-block overview-card-section">
-      ${renderSectionHead("指数温度卡片", "点击卡片查看该指数 10 年月度市值、营收、PE 和巴菲特指标")}
+      ${renderSectionHead("指数温度卡片", "点击卡片查看该指数 10 年月度市值、营收、PE 和增长对比")}
       <div class="temperature-card-grid">
         ${data.markets.map(renderTemperatureCard).join("")}
       </div>
@@ -1711,7 +1871,15 @@ function renderGlobalCapacityHelp(data) {
           ${data.globalMarketSummary.metrics.map(item => `<em>${safeText(item.label)}：${safeText(item.value)}</em>`).join("")}
         </div>
         <ol>
-          ${rows.map(item => `<li><span>${safeText(item.name)}</span><strong>${safeText(item.capShortText)}</strong></li>`).join("")}
+          ${rows.map(item => `
+            <li>
+              <div>
+                <span>${safeText(item.name)}</span>
+                <i style="--bar:${safeText(item.capWidth)}"></i>
+              </div>
+              <strong>${safeText(item.capShortText)}</strong>
+            </li>
+          `).join("")}
         </ol>
         <small>数据口径 ${safeText(data.globalMarketCapUpdatedAtText)}，原始来源为 Bloomberg / Visual Capitalist。</small>
       </div>
@@ -1731,9 +1899,9 @@ function renderMarketStyle(data) {
         </article>
         <div class="style-mainline-metrics">
           <div><span>主线热度</span><strong>${safeText(data.mainline.scoreText)}</strong></div>
-          <div><span>净流入</span><strong class="${data.mainline.netFlowClass}">${safeText(data.mainline.netFlowText)}</strong></div>
+          <div><span>中期趋势</span><strong>${safeText(data.mainline.trendText)}</strong></div>
+          <div><span>单日净流入</span><strong class="${data.mainline.netFlowClass}">${safeText(data.mainline.netFlowText)}</strong></div>
           <div><span>成交占比</span><strong>${safeText(data.mainline.turnoverShareText)}</strong></div>
-          <div><span>净流入/成交</span><strong class="${data.marketNetClass}">${safeText(data.marketNetRatioText)}</strong></div>
         </div>
         <div class="style-mainline-reasons">
           ${data.mainline.reasons.map(reason => `<span>${safeText(reason)}</span>`).join("")}
@@ -1830,6 +1998,10 @@ function renderCrowding(data) {
         </article>
         <article class="panel module-card breadth-card">
           <div class="section-head"><h2>市场广度</h2><span>上涨 / 下跌家数</span></div>
+          <div class="breadth-conclusion ${data.breadth.conclusionClass}">
+            <strong>${safeText(data.breadth.conclusion)}</strong>
+            <span>${safeText(data.breadth.downRatioText)} 下跌</span>
+          </div>
           <div class="echart breadth-chart" data-chart="breadth"></div>
           <div class="breadth-counts">
             <span>上涨 <strong class="positive">${safeText(data.breadth.upText)}</strong></span>
@@ -1852,8 +2024,8 @@ function renderCrowding(data) {
           ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.fundCluster)}
         </article>
         <article class="panel module-card wide">
-          <div class="section-head"><h2>拥挤历史</h2><span>主线交易拥挤度，越高代表越容易出现回撤或风格切换</span></div>
-          <p class="chart-explain">拥挤度 = 成交占比 + 资金流入占比 + 基金集中度。80% 以上接近泡沫期，50%-80% 是热门期，50% 以下说明交易还没有明显集中。</p>
+          <div class="section-head"><h2>主线拥挤度历史</h2><span>当前主线交易集中度，越高越容易回撤或风格切换</span></div>
+          <p class="chart-explain">这里不是全市场历史涨跌，而是记录“当前主线”的拥挤度。80% 以上接近泡沫期，50%-80% 是热门期，50% 以下说明交易还没有明显集中。</p>
           <div class="echart crowding-history-chart" data-chart="crowding-history"></div>
           ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.crowdingHistory)}
         </article>
@@ -2014,7 +2186,7 @@ function renderHistory(data) {
       <a class="history-back-link" href="#/overview">返回大盘概览</a>
       <h2 class="history-dashboard-title">${safeText(market.name)}：市值与营收是否匹配</h2>
       ${renderHistoryStatStrip(series)}
-      <p class="chart-explain">主图只回答一个问题：企业基本面增长能否支撑指数总市值。PE 与巴菲特指标拆到下方单独判断估值和宏观泡沫。</p>
+      <p class="chart-explain">主图只回答一个问题：企业基本面增长能否支撑指数总市值。PE 放在右轴，只判断该指数估值，不混入全市场宏观指标。</p>
       <div class="chart-wrap history-main-wrap">
         <div class="echart history-main-chart" data-chart="history-main"></div>
       </div>
@@ -2028,12 +2200,6 @@ function renderHistory(data) {
         ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.historyPe)}
       </article>
       <article class="history-dashboard-card">
-        <h2 class="subchart-title">巴菲特指标</h2>
-        <p class="chart-explain">回答“市场整体是否泡沫”：它是宏观估值，不和指数自身指标堆在同一张主图。</p>
-        <div class="echart history-subchart" data-chart="buffett-indicator"></div>
-        ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.historyBuffett)}
-      </article>
-      <article class="history-dashboard-card">
         <h2 class="subchart-title">营收增速（TTM）与市值增速（TTM）</h2>
         <p class="chart-explain">如果市值增速长期高于营收增速，通常说明估值正在扩张。</p>
         <div class="echart history-subchart" data-chart="growth-compare"></div>
@@ -2044,7 +2210,7 @@ function renderHistory(data) {
       <article>
         <strong>指标说明</strong>
         <span>PE（TTM）：市盈率，月度采样</span>
-        <span>巴菲特指标：指数总市值 / GDP 口径估算</span>
+        <span>巴菲特指标只在市场状态详情里看全A和美股，不放入单个指数详情。</span>
       </article>
       <article>
         <strong>当前状态（示意）</strong>
@@ -2138,7 +2304,6 @@ function renderHistoryStatStrip(series) {
     ["总市值", `${fixed(latest.marketCapT, 1)} 万亿`],
     ["总营收（TTM）", `${fixed(latest.revenueT, 1)} 万亿`],
     ["PE（TTM）", `${fixed(latest.pe, 1)} 倍`, "negative"],
-    ["巴菲特指标", `${fixed(latest.buffett, 1)} %`, "positive"],
     ["营收同比增速（TTM）", pct(latest.revenueGrowth, 1)]
   ];
 
@@ -2158,7 +2323,6 @@ function renderHistoryState(series) {
   const latest = series[series.length - 1] || {};
   const items = [
     ["PE", latest.pePercentile < 40 ? "处于合理偏低区间" : latest.pePercentile > 80 ? "处于高估拥挤区间" : "处于中等区间"],
-    ["巴菲特指标", latest.buffett > 80 ? "处于偏高水平" : "处于中性水平"],
     ["营收增速", latest.revenueGrowth > 0 ? "稳健增长" : "需要观察"],
     ["市值增速", latest.capGrowth > 10 ? "温和回升" : "弱于趋势"]
   ];
@@ -2175,6 +2339,7 @@ function normalizeMarketStyle(payload) {
   const normalizedStyles = styles.map(item => ({
     ...item,
     heatText: ratioLabel(item.heat),
+    trendText: ratioLabel(item.trendScore),
     flowText: ratioLabel(item.flow),
     crowdingText: ratioLabel(item.crowding),
     valuationText: ratioLabel(item.valuation),
@@ -2191,6 +2356,7 @@ function normalizeMarketStyle(payload) {
     ...(data.mainline || {}),
     name: data.mainline?.name || strongest.name || "--",
     scoreText: ratioLabel(data.mainline?.score ?? strongest.heat),
+    trendText: ratioLabel(data.mainline?.trendScore ?? strongest.trendScore),
     netFlowText: `${Number(data.mainline?.netFlow ?? strongest.netFlow) > 0 ? "+" : ""}${fixed(data.mainline?.netFlow ?? strongest.netFlow, 1)}亿`,
     netFlowClass: changeClass(data.mainline?.netFlow ?? strongest.netFlow),
     turnoverShareText: ratioLabel(data.mainline?.turnoverShare ?? strongest.turnoverShare),
@@ -2201,6 +2367,7 @@ function normalizeMarketStyle(payload) {
     name: item.name,
     amount: item.netFlow,
     strength: item.flow,
+    trendScore: item.trendScore,
     crowding: item.crowding,
     valuation: item.valuation,
     turnoverShare: item.turnoverShare,
@@ -2208,6 +2375,7 @@ function normalizeMarketStyle(payload) {
     amountText: item.netFlowText,
     amountClass: item.netFlowClass,
     strengthText: item.flowText,
+    trendText: ratioLabel(item.trendScore),
     crowdingText: item.crowdingText,
     valuationText: item.valuationText,
     shareText: item.turnoverShareText
@@ -2224,6 +2392,117 @@ function normalizeMarketStyle(payload) {
     rotations: Array.isArray(data.rotations) ? data.rotations : [],
     styleFlows,
     crowding
+  };
+}
+
+function buildDemoMarketStatus() {
+  const nowYear = new Date().getFullYear();
+  const monthLabels = Array.from({ length: 120 }, (_, index) => {
+    const date = new Date(nowYear - 10, index, 1);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  });
+  const makePoints = (base, amp, drift) => monthLabels.map((date, index) => ({
+    date,
+    close: round(base + index * drift + Math.sin(index / 7) * amp + Math.cos(index / 17) * amp * .7),
+    amount: null
+  }));
+  return {
+    summary: "上证 +0.42%，深成 +0.28%，创业板 -0.36%，两市成交约1.12万亿，下跌占比62%",
+    totalTurnover: 1120000000000,
+    breadth: { up: 1960, down: 3220, flat: 132, indexChange: 0.42, note: "指数小幅上涨但多数个股下跌，权重抱团信号偏强。" },
+    items: [
+      { id: "sh000001", name: "上证指数", code: "000001.SH", close: 3386.2, changePct: .42, tenYearChangePct: 18.6, points: makePoints(3000, 280, 2.5) },
+      { id: "sz399001", name: "深证成指", code: "399001.SZ", close: 10328.7, changePct: .28, tenYearChangePct: 11.2, points: makePoints(9300, 1050, 8) },
+      { id: "sz399006", name: "创业板指", code: "399006.SZ", close: 2086.4, changePct: -.36, tenYearChangePct: -4.8, points: makePoints(2100, 380, -1.6) }
+    ],
+    buffettPanels: {
+      allA: { title: "全A巴菲特指标", points: [52, 61, 55, 63, 82, 76, 65, 58, 64, 72, 75].map((value, index) => ({ date: `${2016 + index}`, value })), logic: "全A股票总市值 / 中国GDP。" },
+      us: { title: "美股巴菲特指标", points: [126, 141, 132, 151, 184, 201, 176, 171, 190, 204, 211].map((value, index) => ({ date: `${2016 + index}`, value })), logic: "美国上市公司总市值 / 美国GDP。" }
+    },
+    fedLiquidity: [
+      { year: 2016, stance: "温和加息", balanceSheet: 4.47, rate: .75, note: "QE后高位横盘。" },
+      { year: 2017, stance: "加息+缩表", balanceSheet: 4.45, rate: 1.5, note: "开始缩表。" },
+      { year: 2018, stance: "收水", balanceSheet: 4.06, rate: 2.5, note: "风险资产承压。" },
+      { year: 2019, stance: "转向放松", balanceSheet: 4.17, rate: 1.75, note: "停止缩表并降息。" },
+      { year: 2020, stance: "极度放水", balanceSheet: 7.36, rate: .25, note: "疫情QE。" },
+      { year: 2021, stance: "放水尾声", balanceSheet: 8.76, rate: .25, note: "风险偏好高。" },
+      { year: 2022, stance: "快速收水", balanceSheet: 8.55, rate: 4.5, note: "高通胀快速加息。" },
+      { year: 2023, stance: "高利率横盘", balanceSheet: 7.73, rate: 5.5, note: "缩表延续。" },
+      { year: 2024, stance: "紧缩尾部", balanceSheet: 6.89, rate: 5.5, note: "交易降息预期。" },
+      { year: 2025, stance: "观察降息", balanceSheet: 6.65, rate: 4.75, note: "利率下行预期增强。" },
+      { year: 2026, stance: "待确认", balanceSheet: 6.5, rate: 4.25, note: "观察缩表节奏。" }
+    ]
+  };
+}
+
+function blankMarketStatus() {
+  return {
+    summary: "市场状态数据待回源补齐。",
+    totalTurnover: null,
+    breadth: { up: null, down: null, flat: null, note: "全A涨跌家数待补齐。" },
+    items: [],
+    buffettPanels: {},
+    fedLiquidity: []
+  };
+}
+
+function normalizeMarketStatus(payload, allowDemo = false) {
+  const data = payload || (allowDemo ? buildDemoMarketStatus() : blankMarketStatus());
+  const fallback = allowDemo ? buildDemoMarketStatus() : blankMarketStatus();
+  const items = (Array.isArray(data.items) && data.items.length ? data.items : fallback.items).map(item => ({
+    ...item,
+    closeText: fixed(item.close, 2),
+    changePctText: pct(item.changePct, 2),
+    changeClass: changeClass(item.changePct),
+    tenYearText: pct(item.tenYearChangePct, 1),
+    tenYearClass: changeClass(item.tenYearChangePct),
+    points: Array.isArray(item.points) ? item.points : []
+  }));
+  const breadth = data.breadth || {};
+  const up = Number(breadth.up) || 0;
+  const down = Number(breadth.down) || 0;
+  const flat = Number(breadth.flat) || 0;
+  const total = up + down + flat;
+  const upRatio = total ? up / total * 100 : null;
+  const downRatio = total ? down / total * 100 : null;
+  const breadthConclusion = downRatio >= 70
+    ? "明显抱团"
+    : downRatio >= 55
+      ? "广度偏弱"
+      : upRatio >= 58
+        ? "普涨"
+        : "中性分化";
+  const breadthConclusionClass = downRatio >= 55 ? "negative" : upRatio >= 58 ? "positive" : "neutral";
+  const turnover = Number(data.totalTurnover) || 0;
+  const first = items[0] || {};
+  const second = items[1] || {};
+  const third = items[2] || {};
+  return {
+    summary: data.summary || "",
+    turnoverText: turnoverMoney(turnover, "CNY"),
+    totalTurnover: turnover,
+    breadth: {
+      ...breadth,
+      up,
+      down,
+      flat,
+      upRatioText: ratioLabel(upRatio),
+      downRatioText: ratioLabel(downRatio),
+      note: breadth.note || ""
+    },
+    breadthConclusion,
+    breadthConclusionClass,
+    items,
+    statusRows: [
+      { label: "上证", value: first.changePctText || "--" },
+      { label: "深成", value: second.changePctText || "--" },
+      { label: "创业板", value: third.changePctText || "--" },
+      { label: "两市成交", value: turnover ? turnoverMoney(turnover, "CNY") : "--" },
+      { label: "上涨家数", value: up ? String(up) : "--" },
+      { label: "下跌家数", value: down ? String(down) : "--" }
+    ],
+    buffettPanels: data.buffettPanels || fallback.buffettPanels,
+    fedLiquidity: Array.isArray(data.fedLiquidity) ? data.fedLiquidity : fallback.fedLiquidity
   };
 }
 
@@ -2244,6 +2523,7 @@ function normalizeOverview(payload) {
     globalMarketCapUpdatedAtText: dateText(globalMarketCapMeta.dataAsOf || globalMarketCapMeta.publishedAt || data.updatedAt),
     heat: data.heat || {},
     signals: Array.isArray(data.signals) ? data.signals : [],
+    marketStatus: normalizeMarketStatus(data.marketStatus, data.source === "demo"),
     globalMarketCaps,
     globalMarketSummary: {
       title: "为什么重点看中美市场",
@@ -2302,7 +2582,8 @@ function normalizeGlobalMarketCaps(rows) {
       ...item,
       capText: globalMarketCapText(item.cap),
       capShortText: `${fixed(Number(item.cap) / 1000000000000, 1)}万亿`,
-      usRatioText: ratioLabel(usCap ? Number(item.cap) / usCap * 100 : null)
+      usRatioText: ratioLabel(usCap ? Number(item.cap) / usCap * 100 : null),
+      capWidth: `${Math.max(Number(item.cap) / usCap * 100, 4).toFixed(1)}%`
     }));
 }
 
@@ -2409,6 +2690,14 @@ function normalizeCrowding(payload) {
   const data = payload || {};
   const totalBreadth = Number(data.breadth?.up || 0) + Number(data.breadth?.down || 0) + Number(data.breadth?.flat || 0);
   const downRatio = totalBreadth ? Number(data.breadth?.down || 0) / totalBreadth * 100 : 0;
+  const upRatio = totalBreadth ? Number(data.breadth?.up || 0) / totalBreadth * 100 : 0;
+  const breadthConclusion = downRatio >= 70
+    ? "明显抱团"
+    : downRatio >= 55
+      ? "广度偏弱"
+      : upRatio >= 58
+        ? "普涨"
+        : "中性分化";
   const industryMax = Math.max(...(data.fundCluster?.industries || []).map(item => Number(item.weight) || 0), 1);
   const industryCapMax = Math.max(...(data.industries || []).map(item => Number(item.marketCap) || 0), 1);
   return {
@@ -2439,7 +2728,9 @@ function normalizeCrowding(payload) {
       upRatio: totalBreadth ? `${Math.round(Number(data.breadth?.up || 0) / totalBreadth * 100)}%` : "50%",
       downRatioText: ratioLabel(downRatio),
       indexText: pct(data.breadth?.indexChange, 2),
-      indexClass: changeClass(data.breadth?.indexChange)
+      indexClass: changeClass(data.breadth?.indexChange),
+      conclusion: breadthConclusion,
+      conclusionClass: downRatio >= 55 ? "negative" : upRatio >= 58 ? "positive" : "neutral"
     },
     fundCluster: {
       ...(data.fundCluster || {}),

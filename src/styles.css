@@ -206,7 +206,7 @@ h3 {
 .section-title-row {
   position: relative;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: flex-start;
   gap: 18px;
   margin-bottom: 16px;
@@ -216,6 +216,12 @@ h3 {
 
 .section-heading-main {
   min-width: 0;
+}
+
+.section-heading-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .section-title-row h2 {
@@ -251,7 +257,7 @@ h3 {
 .capacity-popover {
   position: absolute;
   top: calc(100% + 9px);
-  right: 0;
+  left: 0;
   z-index: 50;
   width: min(520px, calc(100vw - 40px));
   border: 1px solid #e2d0b3;
@@ -309,13 +315,28 @@ h3 {
 }
 
 .capacity-popover li {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
   gap: 14px;
   border-radius: 8px;
   padding: 7px 9px;
   background: #fff3d8;
   font-size: 13px;
+}
+
+.capacity-popover li div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.capacity-popover li i {
+  display: block;
+  width: var(--bar);
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #c86b5a, #d6a351);
 }
 
 .capacity-popover small {
@@ -473,6 +494,20 @@ h3 {
   gap: 16px;
 }
 
+.terminal-summary-link {
+  display: block;
+  border-radius: 8px;
+}
+
+.terminal-summary-link:hover .terminal-summary-score,
+.terminal-summary-link:focus-visible .terminal-summary-score {
+  transform: translateY(-1px);
+}
+
+.terminal-summary-score {
+  transition: transform .16s ease;
+}
+
 .terminal-summary-score {
   display: grid;
   place-items: center;
@@ -585,6 +620,101 @@ h3 {
   min-height: 390px;
   border-radius: 8px;
   background: #fff8ea;
+}
+
+.market-status-detail .history-back-link {
+  margin-top: -4px;
+}
+
+.market-status-hero {
+  display: grid;
+  grid-template-columns: minmax(280px, .8fr) minmax(360px, 1.2fr);
+  gap: 14px;
+  margin: 8px 0 16px;
+}
+
+.market-status-hero article,
+.status-index-kpis span,
+.fed-cycle-table div {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff5df;
+}
+
+.market-status-hero article {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+}
+
+.market-status-hero span,
+.market-status-hero em,
+.status-index-kpis span,
+.fed-cycle-table em,
+.fed-cycle-table p {
+  color: var(--muted);
+  font-style: normal;
+}
+
+.market-status-hero strong {
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.05;
+}
+
+.market-status-index-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.status-index-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.status-index-kpis span {
+  display: grid;
+  gap: 4px;
+  padding: 9px 10px;
+  font-size: 12px;
+}
+
+.status-index-kpis strong {
+  color: var(--text);
+  font-size: 16px;
+}
+
+.status-index-chart,
+.macro-buffett-chart {
+  min-height: 300px;
+}
+
+.fed-cycle-table {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.fed-cycle-table div {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+}
+
+.fed-cycle-table strong {
+  font-size: 18px;
+}
+
+.fed-cycle-table span {
+  font-weight: 850;
+}
+
+.fed-cycle-table em,
+.fed-cycle-table p {
+  margin: 0;
+  font-size: 12px;
 }
 
 .market-style-strip a {
@@ -1198,6 +1328,25 @@ h3 {
   gap: 14px;
 }
 
+.breadth-conclusion {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: #fff0d3;
+}
+
+.breadth-conclusion strong {
+  font-size: 26px;
+}
+
+.breadth-conclusion span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .breadth-donut {
   display: grid;
   width: 164px;
@@ -1256,7 +1405,7 @@ h3 {
 }
 
 .industry-crowding-chart {
-  min-height: 430px;
+  min-height: 560px;
 }
 
 .crowding-rank-chart {
@@ -1789,7 +1938,7 @@ h3 {
 
 .history-stat-strip {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   border-bottom: 1px solid var(--line);
   padding-bottom: 12px;
 }
@@ -2130,6 +2279,9 @@ h3 {
   .style-evidence-grid,
   .terminal-summary-layout,
   .global-capacity-layout,
+  .market-status-hero,
+  .market-status-index-grid,
+  .fed-cycle-table,
   .history-subchart-grid,
   .history-info-grid {
     grid-template-columns: 1fr;
