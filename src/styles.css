@@ -237,11 +237,57 @@ h3 {
   background: #f2e6d0;
 }
 
-.section-updated span[title] {
+[data-tooltip] {
+  position: relative;
   cursor: help;
   text-decoration: underline;
   text-decoration-style: dotted;
   text-underline-offset: 3px;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 40;
+  width: max-content;
+  max-width: min(380px, 80vw);
+  border: 1px solid #e2d0b3;
+  border-radius: 8px;
+  padding: 9px 11px;
+  color: #201b16;
+  background: #fffaf1;
+  box-shadow: 0 16px 32px rgb(66 47 28 / 16%);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.55;
+  opacity: 0;
+  pointer-events: none;
+  text-align: left;
+  white-space: normal;
+  visibility: hidden;
+}
+
+[data-tooltip]::before {
+  content: "";
+  position: absolute;
+  right: 12px;
+  bottom: calc(100% + 3px);
+  z-index: 41;
+  border: 6px solid transparent;
+  border-top-color: #fffaf1;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after,
+[data-tooltip]:hover::before,
+[data-tooltip]:focus-visible::before {
+  opacity: 1;
+  visibility: visible;
 }
 
 .echart {

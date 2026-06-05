@@ -646,7 +646,7 @@ function mountCharts() {
 
   if (state.route.startsWith("history/")) {
     const data = normalizeHistory(state.data);
-    const series = buildHistorySeries(data.points);
+    const series = buildHistorySeries(data.points, data.market);
     mountChart("history-main", historyMainOption(series, data.market));
     mountChart("pe-valuation", peValuationOption(series));
     mountChart("buffett-indicator", buffettIndicatorOption(series));
@@ -699,8 +699,20 @@ function mountChart(name, option) {
 
 function mountChartNode(node, option) {
   const chart = echarts.init(node, null, { renderer: "canvas" });
-  chart.setOption(option);
+  chart.setOption(withInstantChartTooltip(option));
   chartInstances.push(chart);
+}
+
+function withInstantChartTooltip(option) {
+  if (option && option.tooltip && typeof option.tooltip === "object") {
+    option.tooltip = {
+      showDelay: 0,
+      hideDelay: 0,
+      transitionDuration: 0,
+      ...option.tooltip
+    };
+  }
+  return option;
 }
 
 function chartBaseGrid(extra = {}) {
@@ -715,12 +727,32 @@ function chartBaseGrid(extra = {}) {
 }
 
 function chartNumber(value) {
-  const num = Number(value);
-  return Number.isFinite(num) ? round(num) : null;
+  const num = finiteNumber(value);
+  return num == null ? null : round(num);
+}
+
+function emptyChartOption(message) {
+  return {
+    animation: false,
+    graphic: {
+      type: "text",
+      left: "center",
+      top: "middle",
+      style: {
+        text: message,
+        fill: "#7a7063",
+        font: "700 14px sans-serif"
+      }
+    },
+    xAxis: { show: false },
+    yAxis: { show: false },
+    series: []
+  };
 }
 
 function historyMainOption(series, market) {
-  const list = series.filter(item => Number.isFinite(item.marketCapT) || Number.isFinite(item.pe));
+  const list = series.filter(item => Number.isFinite(item.marketCapT) || Number.isFinite(item.revenueT) || Number.isFinite(item.pe));
+  if (!list.length) return emptyChartOption("暂无可用历史数据");
   const dates = list.map(item => item.date);
   const latestName = safeText(market?.name || "指数");
   return {
@@ -804,6 +836,7 @@ function historyMainOption(series, market) {
 
 function peValuationOption(series) {
   const list = series.filter(item => Number.isFinite(item.pePercentile));
+  if (!list.length) return emptyChartOption("暂无 PE 历史数据");
   const latest = list[list.length - 1] || {};
   const status = valuationStatus(latest.pePercentile);
   return {
@@ -862,6 +895,7 @@ function peValuationOption(series) {
 
 function buffettIndicatorOption(series) {
   const list = series.filter(item => Number.isFinite(item.buffett));
+  if (!list.length) return emptyChartOption("暂无巴菲特指标数据");
   return {
     color: ["#5c8d7b"],
     tooltip: { trigger: "axis", valueFormatter: value => `${Number(value).toFixed(1)}%` },
@@ -887,6 +921,7 @@ function buffettIndicatorOption(series) {
 
 function growthCompareOption(series) {
   const list = series.filter(item => item.revenueGrowth != null || item.capGrowth != null);
+  if (!list.length) return emptyChartOption("暂无增长对比数据");
   return {
     color: ["#1f6ff2", "#ff2f22"],
     tooltip: { trigger: "axis", valueFormatter: value => `${Number(value).toFixed(1)}%` },
@@ -1552,7 +1587,7 @@ function renderPageHead({ eyebrow, title, subtitle, updatedAtText, usingDemo, de
       ${updatedAtText ? `
         <div class="source-row">
           <span class="source-pill">更新 ${updatedAtText}</span>
-          ${usingDemo ? `<span class="source-pill demo" title="${escapeAttr(demoReason)}">演示数据</span>` : ""}
+          ${usingDemo ? `<span class="source-pill demo" data-tooltip="${escapeAttr(demoReason)}">演示数据</span>` : ""}
         </div>
       ` : ""}
     </section>
@@ -1571,11 +1606,11 @@ function renderSectionHead(title, note = "") {
 }
 
 function renderSectionUpdated(updatedAtText, usingDemo = false, logic = "") {
-  const logicTitle = logic ? ` title="${escapeAttr(logic)}"` : "";
+  const logicAttr = logic ? ` data-tooltip="${escapeAttr(logic)}"` : "";
   return `
     <footer class="section-updated">
       ${usingDemo ? "<span>演示数据</span>" : ""}
-      <span${logicTitle}>更新 ${safeText(updatedAtText)}</span>
+      <span${logicAttr}>更新 ${safeText(updatedAtText)}</span>
     </footer>
   `;
 }
@@ -1972,7 +2007,7 @@ function renderDividendSpark(points, index) {
 }
 
 function renderHistory(data) {
-  const series = buildHistorySeries(data.points);
+  const series = buildHistorySeries(data.points, data.market);
   const market = data.market || {};
   return `
     <article class="history-dashboard-card">
@@ -2024,23 +2059,36 @@ function renderHistory(data) {
   `;
 }
 
-function buildHistorySeries(points) {
+function buildHistorySeries(points, market = {}) {
   const raw = (Array.isArray(points) ? points : [])
-    .filter(item => item.marketCap != null || item.peTtm != null);
-  const pes = raw.map(item => Number(item.peTtm)).filter(Number.isFinite);
+    .filter(item => item.marketCap != null || item.close != null || item.peTtm != null);
+  const pes = raw.map(item => finiteNumber(item.peTtm)).filter(Number.isFinite);
   const peMin = Math.min(...pes, 0);
   const peMax = Math.max(...pes, 1);
+  const latestClose = [...raw].reverse().map(item => finiteNumber(item.close)).find(Number.isFinite);
+  const latestMarketCapT = [...raw].reverse()
+    .map(item => finiteNumber(item.marketCap))
+    .find(value => value != null && value > 0);
+  const fallbackMarketCapT = latestMarketCapT ? latestMarketCapT / 1000000000000 : historyMarketCapBaselineT(market);
 
   const list = raw.map((item, index) => {
     const progress = raw.length > 1 ? index / (raw.length - 1) : 1;
-    const marketCapT = Number(item.marketCap) / 1000000000000;
-    const pe = Number(item.peTtm);
+    const rawMarketCap = finiteNumber(item.marketCap);
+    const close = finiteNumber(item.close);
+    const marketCapT = rawMarketCap && rawMarketCap > 0
+      ? rawMarketCap / 1000000000000
+      : close && latestClose && fallbackMarketCapT
+        ? fallbackMarketCapT * close / latestClose
+        : null;
+    const pe = finiteNumber(item.peTtm);
     const wave = Math.sin(progress * Math.PI * 4.2) * .03 + Math.cos(progress * Math.PI * 2.1) * .02;
-    const revenueT = Math.max(0, marketCapT * (.68 + progress * .08 + wave));
-    const rawPercentile = Number(item.pePercentile);
+    const revenueT = Number.isFinite(marketCapT) ? Math.max(0, marketCapT * (.68 + progress * .08 + wave)) : null;
+    const rawPercentile = finiteNumber(item.pePercentile);
     const pePercentile = Number.isFinite(rawPercentile)
       ? rawPercentile
-      : Math.max(1, Math.min(99, (pe - peMin) / Math.max(peMax - peMin, 1) * 100));
+      : Number.isFinite(pe)
+        ? Math.max(1, Math.min(99, (pe - peMin) / Math.max(peMax - peMin, 1) * 100))
+        : null;
 
     return {
       date: item.date,
@@ -2048,7 +2096,7 @@ function buildHistorySeries(points) {
       revenueT,
       pe,
       pePercentile,
-      buffett: Math.max(15, Math.min(120, 32 + pePercentile * .78 + wave * 120)),
+      buffett: Number.isFinite(pePercentile) ? Math.max(15, Math.min(120, 32 + pePercentile * .78 + wave * 120)) : null,
       revenueGrowth: null,
       capGrowth: null
     };
@@ -2063,6 +2111,24 @@ function buildHistorySeries(points) {
       capGrowth: prev.marketCapT ? (item.marketCapT / prev.marketCapT - 1) * 100 : null
     };
   });
+}
+
+function historyMarketCapBaselineT(market = {}) {
+  const id = market.id || "";
+  const baselines = {
+    csi300: 68.6,
+    csi800: 84,
+    csi1000: 18,
+    star50: 7,
+    nasdaq: 75,
+    sp500: 75,
+    hsi: 7.4,
+    hstech: 2.8
+  };
+  if (baselines[id]) return baselines[id];
+  const demoMarket = demoIndexCards.find(item => item.id === id || item.code === market.code);
+  const demoCap = finiteNumber(demoMarket && demoMarket.marketCap);
+  return demoCap ? demoCap / 1000000000000 : 30;
 }
 
 function renderHistoryStatStrip(series) {
@@ -2492,17 +2558,17 @@ function dateText(value) {
 }
 
 function fixed(value, digits) {
-  const num = Number(value);
+  const num = finiteNumber(value);
   return Number.isFinite(num) ? num.toFixed(digits) : "--";
 }
 
 function pct(value, digits = 2) {
-  const num = Number(value);
+  const num = finiteNumber(value);
   return Number.isFinite(num) ? `${num > 0 ? "+" : ""}${num.toFixed(digits)}%` : "--";
 }
 
 function money(value, currency) {
-  const num = Number(value);
+  const num = finiteNumber(value);
   if (!Number.isFinite(num)) return "--";
   if (currency === "USD") return `${(num / 1000000000000).toFixed(1)}万亿美元`;
   if (currency === "HKD") return `${(num / 1000000000000).toFixed(1)}万亿港元`;
@@ -2510,19 +2576,19 @@ function money(value, currency) {
 }
 
 function globalMarketCapText(value) {
-  const num = Number(value);
+  const num = finiteNumber(value);
   return Number.isFinite(num) ? `${(num / 1000000000000).toFixed(1)}万亿美元` : "--";
 }
 
 function flowMoney(value, currency) {
-  const num = Number(value);
+  const num = finiteNumber(value);
   if (!Number.isFinite(num)) return "--";
   const unit = currency === "USD" ? "亿美元" : currency === "HKD" ? "亿港元" : "亿元";
   return `${num > 0 ? "+" : ""}${(Math.abs(num) / 100000000).toFixed(1)}${unit}`;
 }
 
 function turnoverMoney(value, currency) {
-  const num = Number(value);
+  const num = finiteNumber(value);
   if (!Number.isFinite(num)) return "--";
   if (currency === "USD") return `${(num / 1000000000000).toFixed(2)}万亿美元`;
   if (currency === "HKD") return `${(num / 1000000000000).toFixed(2)}万亿港元`;
@@ -2540,15 +2606,21 @@ function stockQuoteUrl(code) {
 }
 
 function ratioLabel(value) {
-  const num = Number(value);
+  const num = finiteNumber(value);
   return Number.isFinite(num) ? `${num.toFixed(0)}%` : "--";
 }
 
 function percentileRank(values, current) {
-  const list = (Array.isArray(values) ? values : []).map(Number).filter(Number.isFinite);
-  const num = Number(current);
+  const list = (Array.isArray(values) ? values : []).map(finiteNumber).filter(Number.isFinite);
+  const num = finiteNumber(current);
   if (!list.length || !Number.isFinite(num)) return null;
   return list.filter(value => value <= num).length / list.length * 100;
+}
+
+function finiteNumber(value) {
+  if (value == null || value === "" || value === "INVALID") return null;
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
 }
 
 function changeClass(value) {
