@@ -480,20 +480,16 @@ const demoMarketStyle = {
 const demoValueInvesting = {
   source: "demo",
   updatedAt: "2026-06-03T01:00:00+08:00",
-  summary: "初版固定观察 12 只 A 股大蓝筹股息票，重点看股息率、分红稳定性、增发风险和重大利空。",
+  summary: "固定观察四大行、招商银行、贵州茅台、长江电力、中国神华，重点看股息率、分红稳定性、增发风险和重大利空。",
   stocks: [
     { code: "601398.SH", name: "工商银行", dividendYield: 5.8, payout: 31, pe: 5.1, issueRisk: "低", badNews: "无重大未消化利空", trend: [3.7, 3.8, 4.1, 4.2, 4.4, 4.8, 5.1, 5.5, 5.6, 5.8] },
     { code: "601288.SH", name: "农业银行", dividendYield: 5.4, payout: 32, pe: 5.4, issueRisk: "低", badNews: "息差压力", trend: [3.4, 3.5, 3.8, 4.0, 4.1, 4.6, 4.9, 5.2, 5.3, 5.4] },
-    { code: "600028.SH", name: "中国石化", dividendYield: 6.1, payout: 58, pe: 8.8, issueRisk: "中", badNews: "油价波动", trend: [4.3, 4.6, 4.8, 4.9, 5.0, 5.4, 5.9, 5.7, 5.8, 6.1] },
-    { code: "601088.SH", name: "中国神华", dividendYield: 6.7, payout: 71, pe: 9.2, issueRisk: "低", badNews: "煤价下行", trend: [5.2, 5.6, 5.9, 6.0, 6.2, 7.1, 7.4, 6.9, 6.8, 6.7] },
-    { code: "600900.SH", name: "长江电力", dividendYield: 3.4, payout: 69, pe: 21.4, issueRisk: "低", badNews: "估值偏贵", trend: [4.2, 4.1, 4.0, 3.9, 3.8, 3.6, 3.5, 3.4, 3.4, 3.4] },
-    { code: "600519.SH", name: "贵州茅台", dividendYield: 2.9, payout: 52, pe: 22.6, issueRisk: "低", badNews: "批价压力", trend: [1.1, 1.2, 1.4, 1.5, 1.6, 1.9, 2.2, 2.5, 2.7, 2.9] },
-    { code: "000651.SZ", name: "格力电器", dividendYield: 7.2, payout: 68, pe: 7.5, issueRisk: "低", badNews: "增长放缓", trend: [4.9, 5.1, 5.4, 5.6, 5.8, 6.1, 6.7, 7.0, 7.1, 7.2] },
-    { code: "600887.SH", name: "伊利股份", dividendYield: 4.6, payout: 63, pe: 13.2, issueRisk: "低", badNews: "需求偏弱", trend: [2.2, 2.4, 2.6, 2.8, 2.9, 3.4, 4.0, 4.3, 4.5, 4.6] },
-    { code: "601318.SH", name: "中国平安", dividendYield: 5.2, payout: 39, pe: 7.9, issueRisk: "中", badNews: "地产资产质量", trend: [2.5, 2.7, 2.9, 3.0, 3.1, 4.0, 4.7, 5.0, 5.1, 5.2] },
+    { code: "601939.SH", name: "建设银行", dividendYield: 5.7, payout: 34, pe: 5.8, issueRisk: "低", badNews: "息差压力", trend: [3.6, 3.8, 4.0, 4.2, 4.4, 4.9, 5.2, 5.5, 5.6, 5.7] },
+    { code: "601988.SH", name: "中国银行", dividendYield: 5.6, payout: 35, pe: 5.9, issueRisk: "低", badNews: "息差压力", trend: [3.7, 3.9, 4.1, 4.3, 4.6, 5.0, 5.3, 5.4, 5.5, 5.6] },
     { code: "600036.SH", name: "招商银行", dividendYield: 5.0, payout: 35, pe: 6.2, issueRisk: "低", badNews: "净息差承压", trend: [2.8, 2.9, 3.1, 3.2, 3.3, 3.8, 4.4, 4.8, 4.9, 5.0] },
-    { code: "601668.SH", name: "中国建筑", dividendYield: 4.8, payout: 22, pe: 4.6, issueRisk: "中", badNews: "地产链拖累", trend: [3.6, 3.7, 3.9, 4.0, 4.1, 4.3, 4.6, 4.9, 4.9, 4.8] },
-    { code: "601857.SH", name: "中国石油", dividendYield: 4.9, payout: 48, pe: 9.7, issueRisk: "中", badNews: "油气价格波动", trend: [3.7, 3.8, 4.0, 4.1, 4.2, 4.7, 5.1, 5.0, 4.8, 4.9] }
+    { code: "600519.SH", name: "贵州茅台", dividendYield: 2.9, payout: 52, pe: 22.6, issueRisk: "低", badNews: "批价压力", trend: [1.1, 1.2, 1.4, 1.5, 1.6, 1.9, 2.2, 2.5, 2.7, 2.9] },
+    { code: "600900.SH", name: "长江电力", dividendYield: 3.4, payout: 69, pe: 21.4, issueRisk: "低", badNews: "估值偏贵", trend: [4.2, 4.1, 4.0, 3.9, 3.8, 3.6, 3.5, 3.4, 3.4, 3.4] },
+    { code: "601088.SH", name: "中国神华", dividendYield: 6.7, payout: 71, pe: 9.2, issueRisk: "低", badNews: "煤价下行", trend: [5.2, 5.6, 5.9, 6.0, 6.2, 7.1, 7.4, 6.9, 6.8, 6.7] }
   ]
 };
 
@@ -1499,7 +1495,7 @@ function crowdingHistoryOption(data) {
 
 function dividendOption(stock) {
   const values = (stock.trend || []).map(Number);
-  const currentYear = 2026;
+  const currentYear = new Date().getFullYear();
   const labels = values.map((_, index) => `${currentYear - values.length + index + 1}`);
   return {
     grid: { top: 16, right: 6, bottom: 20, left: 6 },
@@ -1594,13 +1590,14 @@ function renderPageHead({ eyebrow, title, subtitle, updatedAtText, usingDemo, de
   `;
 }
 
-function renderSectionHead(title, note = "") {
+function renderSectionHead(title, note = "", aside = "") {
   return `
     <div class="section-title-row">
-      <div>
+      <div class="section-heading-main">
         <h2>${safeText(title)}</h2>
         ${note ? `<p>${safeText(note)}</p>` : ""}
       </div>
+      ${aside || ""}
     </div>
   `;
 }
@@ -1624,15 +1621,15 @@ const calcLogic = {
   styleHeatmap: "风格热力图颜色表示资金强度；hover展示风格市值、净流入、拥挤度、估值位置和市场广度。",
   styleTimeline: "历史风格轮动为人工定义的长期主线参考，用来辅助判断当前资金方向是否处在历史相似阶段。",
   flowScale: "资金盘子 = 全市场成交额；主线净流入 = 10大风格净流入合计；净流入/成交额用于判断绝对资金量是否有意义。",
-  etfFlow: "ETF资金流向基于公开ETF行情成交额和涨跌方向估算，近20日趋势用于判断是否持续配置。",
-  industryFlow: "行业资金流按31个行业聚合，面积代表行业市值，颜色代表当日净流入/流出强度。",
+  etfFlow: "ETF资金流向优先使用万得结构化数据；单日净流入要结合成交额占比判断，近20日趋势用于判断是否持续配置。",
+  industryFlow: "行业资金流优先使用万得申万一级行业数据，面积代表行业市值，颜色代表当日主力净流入/流出强度。",
   styleFlow: "10大风格流向横轴为净流入，纵轴为交易活跃度，气泡大小为成交占比。",
-  industryCrowding: "行业规模与拥挤度 = 行业总市值、成交占比、资金流和估值位置综合，用来识别大行业是否过热。",
+  industryCrowding: "行业规模与拥挤度优先使用万得申万一级行业数据：行业总市值、成交占比、主力净流入和估值位置综合，用来识别大行业是否过热。",
   crowdingRank: "拥挤度排行榜按成交占比、资金流强度和估值分位排序，分数越高代表越容易出现回撤或风格切换。",
   breadth: "市场广度统计全A上涨、下跌和平盘家数；若指数上涨但多数股票下跌，说明权重抱团明显。",
   fundCluster: "基金抱团用头部行业市值占比和Top重仓股集中度近似，集中度越高代表交易越拥挤。",
   crowdingHistory: "拥挤历史记录主线交易拥挤度，80%以上偏泡沫，50%-80%为热门期，50%以下代表集中度不高。",
-  valueStocks: "价值投资候选股固定为A股大蓝筹；股息率趋势来自公开分红数据与当前价格计算，持有热度由股息率分位、PE、派息率和风险标记合成。",
+  valueStocks: "价值投资候选股固定为四大行、招商银行、贵州茅台、长江电力、中国神华；股息率趋势优先来自万得近10年年末股息率，持有热度由股息率分位、PE、派息率和风险标记合成。",
   historyMain: "指数详情主图使用10年月度历史：柱状为估算总营收，红线为估算市值，紫线为PE，绿线为巴菲特指标；历史点位来自公开月线接口。",
   historyPe: "PE估值分位 = 当前月PE在10年历史PE序列中的排序位置，分位越高估值越贵。",
   historyBuffett: "巴菲特指标 = A股/指数估算总市值与GDP或基准容量的相对位置，用来观察宏观估值水位。",
@@ -1675,25 +1672,8 @@ function renderOverview(data, histories) {
       ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.marketTemperature)}
     </section>
 
-    <section class="section-block global-capacity-section">
-      ${renderSectionHead("全球十大市场市值容量", "市值容量决定长期配置权重：美国是全球权益资产核心，中国A股和港股是中国资产定价核心")}
-      <div class="global-capacity-layout">
-        <div class="global-capacity-summary">
-          <strong>${safeText(data.globalMarketSummary.title)}</strong>
-          <p>${safeText(data.globalMarketSummary.text)}</p>
-          <div>
-            ${data.globalMarketSummary.metrics.map(item => `
-              <span><em>${safeText(item.label)}</em>${safeText(item.value)}</span>
-            `).join("")}
-          </div>
-        </div>
-        <div class="echart global-capacity-chart" data-chart="global-market-capacity"></div>
-      </div>
-      ${renderSectionUpdated(data.globalMarketCapUpdatedAtText, data.usingDemo, calcLogic.globalCapacity)}
-    </section>
-
     <section class="section-block overview-strip-section">
-      ${renderSectionHead("主要指数风格", "A股宽基、科创，美股核心和港股科技的当前点位、涨跌幅与市场风格")}
+      ${renderSectionHead("主要指数风格", "A股宽基、科创，美股核心和港股科技的当前点位、涨跌幅与市场风格", renderGlobalCapacityHelp(data))}
       <div class="market-style-strip">
         ${data.markets.map(item => `
           <a href="#/history/${safeText(item.id)}">
@@ -1716,6 +1696,26 @@ function renderOverview(data, histories) {
       </div>
       ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.indexCards)}
     </section>
+  `;
+}
+
+function renderGlobalCapacityHelp(data) {
+  const rows = (data.globalMarketCaps || []).slice(0, 6);
+  return `
+    <div class="section-help" tabindex="0" aria-label="查看全球股市容量">
+      <span>?</span>
+      <div class="capacity-popover">
+        <strong>${safeText(data.globalMarketSummary.title)}</strong>
+        <p>${safeText(data.globalMarketSummary.text)}</p>
+        <div class="capacity-metric-row">
+          ${data.globalMarketSummary.metrics.map(item => `<em>${safeText(item.label)}：${safeText(item.value)}</em>`).join("")}
+        </div>
+        <ol>
+          ${rows.map(item => `<li><span>${safeText(item.name)}</span><strong>${safeText(item.capShortText)}</strong></li>`).join("")}
+        </ol>
+        <small>数据口径 ${safeText(data.globalMarketCapUpdatedAtText)}，原始来源为 Bloomberg / Visual Capitalist。</small>
+      </div>
+    </div>
   `;
 }
 
@@ -2002,7 +2002,7 @@ function renderValueInvesting(data) {
 
 function renderDividendSpark(points, index) {
   return `
-    <div class="echart dividend-spark" data-chart="dividend" data-stock-index="${safeText(index)}" aria-label="近五年股息率变化"></div>
+    <div class="echart dividend-spark" data-chart="dividend" data-stock-index="${safeText(index)}" aria-label="近十年股息率变化"></div>
   `;
 }
 

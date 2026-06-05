@@ -204,12 +204,18 @@ h3 {
 }
 
 .section-title-row {
+  position: relative;
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 18px;
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid rgb(228 215 193 / 78%);
+}
+
+.section-heading-main {
+  min-width: 0;
 }
 
 .section-title-row h2 {
@@ -220,6 +226,101 @@ h3 {
   margin: 4px 0 0;
   color: var(--muted);
   font-size: 13px;
+}
+
+.section-help {
+  position: relative;
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.section-help > span {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid #d6a351;
+  border-radius: 50%;
+  color: #8b5a09;
+  background: #fff1ce;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: help;
+}
+
+.capacity-popover {
+  position: absolute;
+  top: calc(100% + 9px);
+  right: 0;
+  z-index: 50;
+  width: min(520px, calc(100vw - 40px));
+  border: 1px solid #e2d0b3;
+  border-radius: 8px;
+  padding: 14px;
+  color: #201b16;
+  background: #fffaf1;
+  box-shadow: 0 16px 36px rgb(66 47 28 / 18%);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.section-help:hover .capacity-popover,
+.section-help:focus-visible .capacity-popover,
+.section-help:focus-within .capacity-popover {
+  opacity: 1;
+  visibility: visible;
+}
+
+.capacity-popover strong,
+.capacity-popover small,
+.capacity-popover em {
+  display: block;
+}
+
+.capacity-popover p {
+  margin: 7px 0 10px;
+  color: #554b3e;
+  font-size: 13px;
+}
+
+.capacity-metric-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.capacity-metric-row em {
+  border-radius: 8px;
+  padding: 7px 8px;
+  background: #f2e4ca;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.capacity-popover ol {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.capacity-popover li {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  border-radius: 8px;
+  padding: 7px 9px;
+  background: #fff3d8;
+  font-size: 13px;
+}
+
+.capacity-popover small {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .section-updated {
@@ -1730,7 +1831,7 @@ h3 {
 
 .history-subchart-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   margin-top: 14px;
 }
