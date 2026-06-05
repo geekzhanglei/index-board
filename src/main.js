@@ -9,17 +9,24 @@ const routes = [
 ];
 
 const demoGlobalMarketCaps = [
-  { name: "美国", cap: 62400000000000, note: "全球最大权益市场，科技与消费龙头集中" },
-  { name: "中国A股", cap: 11800000000000, note: "全球第二梯队核心市场，政策和产业周期影响大" },
-  { name: "日本", cap: 6900000000000, note: "制造业、金融和股东回报改革主导" },
-  { name: "印度", cap: 5200000000000, note: "高增长新兴市场，估值长期偏高" },
-  { name: "英国", cap: 3500000000000, note: "金融、能源和防御型资产占比较高" },
-  { name: "加拿大", cap: 3300000000000, note: "资源、金融和周期行业权重大" },
-  { name: "法国", cap: 3200000000000, note: "奢侈品、工业和金融权重高" },
-  { name: "德国", cap: 2700000000000, note: "制造业和出口链代表性强" },
-  { name: "瑞士", cap: 2400000000000, note: "医药、消费和金融防御属性强" },
-  { name: "中国香港", cap: 4300000000000, note: "中国资产离岸定价核心市场，科技与金融权重高" }
+  { name: "美国", cap: 75040000000000, note: "全球最大权益市场，科技与消费龙头集中" },
+  { name: "中国A股", cap: 14840000000000, note: "中国大陆权益资产核心市场，政策和产业周期影响大" },
+  { name: "日本", cap: 8190000000000, note: "制造业、金融和股东回报改革主导" },
+  { name: "中国香港", cap: 7410000000000, note: "中国资产离岸定价核心市场，科技与金融权重高" },
+  { name: "印度", cap: 4970000000000, note: "高增长新兴市场，估值长期偏高" },
+  { name: "加拿大", cap: 4490000000000, note: "资源、金融和周期行业权重大" },
+  { name: "中国台湾", cap: 4480000000000, note: "半导体和AI硬件供应链权重高" },
+  { name: "韩国", cap: 4040000000000, note: "半导体、电子和出口制造占比较高" },
+  { name: "英国", cap: 3990000000000, note: "金融、能源和防御型资产占比较高" },
+  { name: "法国", cap: 3450000000000, note: "奢侈品、工业和金融权重高" }
 ];
+
+const demoGlobalMarketCapMeta = {
+  title: "Visual Capitalist - Ranked: The World’s Largest Stock Markets",
+  originalSource: "Bloomberg calculations of domestically listed companies across each country’s major exchanges",
+  publishedAt: "2026-05-26T00:00:00.000Z",
+  dataAsOf: "2026-04-30T00:00:00.000Z"
+};
 
 const demoIndexCards = [
   {
@@ -1575,7 +1582,7 @@ function renderSectionUpdated(updatedAtText, usingDemo = false, logic = "") {
 
 const calcLogic = {
   marketTemperature: "大盘温度 = 主要指数PE历史分位均值；流动性信号 = 指数当前市值相对区间首月市值的扩张/收缩；缺失PE时用近一年收盘价分位估算估值温度。",
-  globalCapacity: "全球市场容量取 World Bank 上市公司总市值 CM.MKT.LCAP.CD，各国家取最新非空年份；中美对比使用美国、中国A股、中国香港的美元市值口径。",
+  globalCapacity: "全球市场容量采用 Visual Capitalist 2026-05-26 公开表格，原始口径为 Bloomberg 计算的2026年4月各国主要交易所本土上市公司总市值；数据写死为前十大市场，右下角显示数据口径时间。",
   indexStyle: "主要指数风格来自固定指数定义；点位和涨跌幅优先取公开行情快照，快照缺失时用历史月线最新收盘兜底。",
   indexCards: "指数温度卡片展示点位、涨跌幅、PE、PE分位和总市值；PE分位基于历史区间排序，越高代表越热。",
   mainline: "当前主线 = 10大风格中综合热度最高者；综合热度由资金强度、成交占比和拥挤程度合成。",
@@ -1647,7 +1654,7 @@ function renderOverview(data, histories) {
         </div>
         <div class="echart global-capacity-chart" data-chart="global-market-capacity"></div>
       </div>
-      ${renderSectionUpdated(data.updatedAtText, data.usingDemo, calcLogic.globalCapacity)}
+      ${renderSectionUpdated(data.globalMarketCapUpdatedAtText, data.usingDemo, calcLogic.globalCapacity)}
     </section>
 
     <section class="section-block overview-strip-section">
@@ -2158,6 +2165,7 @@ function normalizeOverview(payload) {
   const data = payload || {};
   const markets = Array.isArray(data.markets) ? data.markets : [];
   const globalMarketCaps = normalizeGlobalMarketCaps(data.globalMarketCaps || demoGlobalMarketCaps);
+  const globalMarketCapMeta = data.globalMarketCapMeta || demoGlobalMarketCapMeta;
   const usCap = globalMarketCaps.find(item => item.name === "美国")?.cap || globalMarketCaps[0]?.cap || 1;
   const chinaCap = globalMarketCaps
     .filter(item => item.name === "中国A股" || item.name === "中国香港")
@@ -2167,6 +2175,7 @@ function normalizeOverview(payload) {
     usingDemo: data.source === "demo",
     demoReason: data.demoReason || "",
     updatedAtText: dateText(data.updatedAt),
+    globalMarketCapUpdatedAtText: dateText(globalMarketCapMeta.dataAsOf || globalMarketCapMeta.publishedAt || data.updatedAt),
     heat: data.heat || {},
     signals: Array.isArray(data.signals) ? data.signals : [],
     globalMarketCaps,
