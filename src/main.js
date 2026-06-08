@@ -452,7 +452,8 @@ const styleRotationTimeline = [
   { start: 2020, end: 2021, style: "新能源" },
   { start: 2021, end: 2022, style: "周期资源" },
   { start: 2023, end: 2024, style: "科技成长(AI)" },
-  { start: 2024, end: 2026, style: "金融红利" }
+  { start: 2024, end: 2024, style: "金融红利" },
+  { start: 2025, end: 2026, style: "科技成长(AI)" }
 ];
 
 const demoMarketStyle = {
