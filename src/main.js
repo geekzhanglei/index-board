@@ -498,8 +498,7 @@ const state = {
   route: getRoute(),
   status: "loading",
   error: "",
-  data: null,
-  histories: {}
+  data: null
 };
 
 const app = document.querySelector("#app");
@@ -546,7 +545,6 @@ async function load() {
     state.status = "ready";
     state.error = "";
     state.data = null;
-    state.histories = {};
     render();
     return;
   }
@@ -557,13 +555,11 @@ async function load() {
 
   try {
     state.data = await requestMarket(route.endpoint, route.id === "overview" ? { range: "1y" } : {});
-    state.histories = route.id === "overview" ? await loadOverviewHistories(state.data) : {};
     state.status = "ready";
   } catch (error) {
     if (ENABLE_DEMO_FALLBACK) {
       state.data = buildDemoPage(route.id);
       state.data.demoReason = error.message || "接口数据加载失败，当前展示演示数据";
-      state.histories = {};
       state.status = "ready";
       state.error = state.data.demoReason;
     } else {
@@ -622,11 +618,11 @@ function renderBody() {
   const route = currentRoute();
   if (state.route.startsWith("history/")) return renderHistory(normalizeHistory(state.data));
   if (state.route === "market-status") return renderMarketStatusDetail(normalizeOverview(state.data));
-  if (route.id === "overview") return renderOverview(normalizeOverview(state.data), state.histories);
+  if (route.id === "overview") return renderOverview(normalizeOverview(state.data));
   if (route.id === "market-style") return renderMarketStyle(normalizeMarketStyle(state.data));
   if (route.id === "crowding") return renderCrowding(normalizeCrowding(extractCrowdingPayload(state.data)));
   if (route.id === "value") return renderValueInvesting(normalizeValueInvesting(state.data));
-  return renderOverview(normalizeOverview(buildDemoOverview()), state.histories);
+  return renderOverview(normalizeOverview(buildDemoOverview()));
 }
 
 app.addEventListener("click", event => {
@@ -1734,24 +1730,6 @@ const calcLogic = {
   historyGrowth: "增长对比 = 营收同比增速与市值同比增速；市值涨得快于营收时，估值扩张贡献更大。"
 };
 
-async function loadOverviewHistories(payload) {
-  const markets = Array.isArray(payload?.markets) ? payload.markets : [];
-  const entries = await Promise.all(markets.map(async market => {
-    try {
-      const history = await requestMarket("/blogapi/market/history", { id: market.id, years: 10 });
-      return [market.id, normalizeHistory(history)];
-    } catch (error) {
-      return [market.id, {
-        error: error.message || "历史数据暂未接入",
-        market,
-        points: []
-      }];
-    }
-  }));
-
-  return Object.fromEntries(entries);
-}
-
 function renderMarketStatusDetail(data) {
   const status = data.marketStatus;
   return `
@@ -1813,7 +1791,7 @@ function renderMarketStatusDetail(data) {
   `;
 }
 
-function renderOverview(data, histories) {
+function renderOverview(data) {
   return `
     <section class="section-block market-terminal-summary">
       ${renderSectionHead("当前市场状态", "3 秒读懂当前适合进攻、防守，还是等待确认")}
