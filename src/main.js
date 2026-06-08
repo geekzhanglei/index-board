@@ -482,7 +482,7 @@ const demoMarketStyle = {
 const demoValueInvesting = {
   source: "demo",
   updatedAt: "2026-06-03T01:00:00+08:00",
-  summary: "固定观察四大行、招商银行、贵州茅台、长江电力、中国神华，重点看股息率、分红稳定性、增发风险和重大利空。",
+  summary: "固定观察四大行、招商银行、贵州茅台、长江电力、中国神华、中国移动，重点看股息率、分红稳定性、增发风险和重大利空。",
   stocks: [
     { code: "601398.SH", name: "工商银行", dividendYield: 5.8, payout: 31, pe: 5.1, issueRisk: "低", badNews: "无重大未消化利空", trend: [3.7, 3.8, 4.1, 4.2, 4.4, 4.8, 5.1, 5.5, 5.6, 5.8] },
     { code: "601288.SH", name: "农业银行", dividendYield: 5.4, payout: 32, pe: 5.4, issueRisk: "低", badNews: "息差压力", trend: [3.4, 3.5, 3.8, 4.0, 4.1, 4.6, 4.9, 5.2, 5.3, 5.4] },
@@ -491,7 +491,8 @@ const demoValueInvesting = {
     { code: "600036.SH", name: "招商银行", dividendYield: 5.0, payout: 35, pe: 6.2, issueRisk: "低", badNews: "净息差承压", trend: [2.8, 2.9, 3.1, 3.2, 3.3, 3.8, 4.4, 4.8, 4.9, 5.0] },
     { code: "600519.SH", name: "贵州茅台", dividendYield: 2.9, payout: 52, pe: 22.6, issueRisk: "低", badNews: "批价压力", trend: [1.1, 1.2, 1.4, 1.5, 1.6, 1.9, 2.2, 2.5, 2.7, 2.9] },
     { code: "600900.SH", name: "长江电力", dividendYield: 3.4, payout: 69, pe: 21.4, issueRisk: "低", badNews: "估值偏贵", trend: [4.2, 4.1, 4.0, 3.9, 3.8, 3.6, 3.5, 3.4, 3.4, 3.4] },
-    { code: "601088.SH", name: "中国神华", dividendYield: 6.7, payout: 71, pe: 9.2, issueRisk: "低", badNews: "煤价下行", trend: [5.2, 5.6, 5.9, 6.0, 6.2, 7.1, 7.4, 6.9, 6.8, 6.7] }
+    { code: "601088.SH", name: "中国神华", dividendYield: 6.7, payout: 71, pe: 9.2, issueRisk: "低", badNews: "煤价下行", trend: [5.2, 5.6, 5.9, 6.0, 6.2, 7.1, 7.4, 6.9, 6.8, 6.7] },
+    { code: "600941.SH", name: "中国移动", dividendYield: 4.2, payout: 70, pe: 18.5, issueRisk: "低", badNews: "资本开支和增长放缓", trend: [3.1, 3.3, 3.5, 3.8, 4.0, 4.2, 4.3, 4.1, 4.2, 4.2] }
   ]
 };
 
@@ -1722,7 +1723,7 @@ const calcLogic = {
   breadth: "市场广度统计全A上涨、下跌和平盘家数；若指数上涨但多数股票下跌，说明权重抱团明显。",
   fundCluster: "基金抱团用头部行业市值占比和Top重仓股集中度近似，集中度越高代表交易越拥挤。",
   crowdingHistory: "主线拥挤度历史记录当前主线的交易集中度，80%以上偏泡沫，50%-80%为热门期，50%以下代表集中度不高。",
-  valueStocks: "价值投资候选股固定为四大行、招商银行、贵州茅台、长江电力、中国神华；股息率趋势优先来自万得近10年年末股息率，持有热度由股息率分位、PE、派息率和风险标记合成。",
+  valueStocks: "价值投资候选股固定为四大行、招商银行、贵州茅台、长江电力、中国神华、中国移动；股息率趋势优先来自万得近10年年末股息率，持有热度由股息率分位、PE、派息率和风险标记合成。",
   allABuffett: "全A巴菲特指标 = A股总市值 / 中国GDP，用来判断A股整体宏观估值水位。",
   usBuffett: "美股巴菲特指标 = 美国上市公司总市值 / 美国GDP，用来判断美股宏观估值水位。",
   fedLiquidity: "美联储流动性周期按资产负债表、联邦基金利率和政策方向归类，用来辅助判断全球风险偏好。",
